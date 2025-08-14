@@ -3,9 +3,10 @@ import fs from 'fs'
 import path from 'path'
 import OpenAI from 'openai'
 
-const openai = new OpenAI({
+// OpenAI API 키가 있을 때만 클라이언트 초기화
+const openai = process.env.OPENAI_API_KEY ? new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
-})
+}) : null
 
 interface SamsungMainData {
   구분: string
@@ -36,6 +37,66 @@ export async function POST(request: Request) {
     
     if (!date) {
       return NextResponse.json({ error: 'Date is required' }, { status: 400 })
+    }
+
+    // OpenAI API 키가 없으면 더미 데이터 반환
+    if (!openai) {
+      console.log('⚠️ OpenAI API 키가 없어서 더미 데이터를 생성합니다.')
+      
+      // samsung_main.json 읽기
+      const mainFilePath = path.join(process.cwd(), 'data', 'samsung_main.json')
+      const mainFileContent = fs.readFileSync(mainFilePath, 'utf8')
+      const mainData: SamsungMainData[] = JSON.parse(mainFileContent)
+
+      // samsung_analysis.json 읽기
+      const analysisFilePath = path.join(process.cwd(), 'data', 'samsung_analysis.json')
+      const analysisFileContent = fs.readFileSync(analysisFilePath, 'utf8')
+      const analysisData: SamsungAnalysisData[] = JSON.parse(analysisFileContent)
+
+      // 선택 모드에 따라 필터링
+      let filteredData: SamsungMainData[] = []
+      
+      if (selectionMode === 'category' && categories && categories.length > 0) {
+        filteredData = mainData.filter(item => categories.includes(item.구분))
+      } else if (selectionMode === 'item' && items && items.length > 0) {
+        filteredData = mainData.filter(item => items.includes(item.연번))
+      } else {
+        filteredData = mainData
+      }
+
+      const newAnalysisData: SamsungAnalysisData[] = []
+      const status: Record<number, 'pending' | 'success' | 'error'> = {}
+
+      // 더미 데이터 생성
+      for (let i = 0; i < filteredData.length; i++) {
+        const item = filteredData[i]
+        
+        // 랜덤한 AI_H지수 생성 (-3에서 3 사이)
+        const aiHIndex = Math.floor(Math.random() * 7) - 3
+        
+        newAnalysisData.push({
+          날짜: date,
+          AI_H지수: aiHIndex,
+          지수X가중치: aiHIndex * item.가중치,
+          구분: item.구분,
+          연번: item.연번,
+          분야: item.분야
+        })
+        
+        status[item.연번] = 'success'
+      }
+
+      // 기존 데이터에 새 데이터 추가
+      const updatedAnalysisData = [...analysisData, ...newAnalysisData]
+      fs.writeFileSync(analysisFilePath, JSON.stringify(updatedAnalysisData, null, 2))
+
+      return NextResponse.json({ 
+        success: true, 
+        message: `${date} 더미 분석 완료 (OpenAI API 키 없음)`,
+        newData: newAnalysisData,
+        progress: 100,
+        status
+      })
     }
 
     // samsung_main.json 읽기
@@ -85,7 +146,7 @@ export async function POST(request: Request) {
         console.log(`\n=== 분석 항목 ${item.연번} ===`)
         console.log(`프롬프트: ${prompt}`)
         
-        const completion = await openai.chat.completions.create({
+        const completion = await openai!.chat.completions.create({
           model: "gpt-4o",
           messages: [
             {

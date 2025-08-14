@@ -1,21 +1,32 @@
 {
-  "name": "samsung-analysis",
+  "name": "ct123",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "dev:web": "next dev",
+    "dev:api": "npm --prefix api run dev",
+    "dev:all": "concurrently \"npm run dev:web\" \"npm run dev:api\"",
+    "build:all": "npm run build",
+    "start:all": "npm run start",
+    "pm2:start": "pm2 start ecosystem.config.js",
+    "pm2:stop": "pm2 stop ct123-app",
+    "pm2:restart": "pm2 restart ct123-app",
+    "pm2:delete": "pm2 delete ct123-app",
+    "pm2:logs": "pm2 logs ct123-app",
+    "pm2:status": "pm2 status",
+    "pm2:monit": "pm2 monit"
   },
   "dependencies": {
-    "next": "14.0.0",
+    "concurrently": "^8.2.2",
+    "next": "14.0.4",
     "react": "^18",
     "react-dom": "^18",
-    "openai": "^4.20.0",
-    "date-fns": "^2.30.0",
     "recharts": "^2.8.0",
-    "lucide-react": "^0.292.0"
+    "lucide-react": "^0.294.0"
   },
   "devDependencies": {
     "typescript": "^5",
@@ -23,9 +34,9 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "autoprefixer": "^10.0.1",
-    "postcss": "^8",
-    "tailwindcss": "^3.3.0",
     "eslint": "^8",
-    "eslint-config-next": "14.0.0"
+    "eslint-config-next": "14.0.4",
+    "postcss": "^8",
+    "tailwindcss": "^3.3.0"
   }
 } 
