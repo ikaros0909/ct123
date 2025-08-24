@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npx prisma generate:*)",
+      "Bash(npx prisma db push:*)",
+      "Bash(set DATABASE_URL=postgresql://samsung_user:samsung_pass_2024@localhost:5432/samsung_db?schema=public)",
+      "Bash(D:DevRootSamsung_Analysissetup-prisma.bat)",
+      "Bash(cmd:*)",
+      "Bash(npm run dev:*)",
+      "Bash(taskkill:*)",
+      "Bash(npx tsx:*)",
+      "Bash(del /f node_modules\\.prisma\\client\\query_engine-windows.dll.node)",
+      "Bash(npx kill-port:*)",
+      "Bash(psql:*)",
+      "Bash(sc query:*)",
+      "Bash(node:*)",
+      "Bash(del /f \"D:\\DevRoot\\Samsung_Analysis\\node_modules\\.prisma\\client\\query_engine-windows.dll.node\")",
+      "Bash(npx prisma migrate dev:*)",
+      "Bash(tasklist:*)",
+      "Bash(timeout:*)",
+      "Bash(net start:*)",
+      "Bash(\"C:\\Program Files\\PostgreSQL\\17\\bin\\pg_ctl\" -D \"C:\\Program Files\\PostgreSQL\\17\\data\" start)",
+      "Bash(\"C:\\Program Files\\PostgreSQL\\17\\bin\\psql\" -U samsung_user -d samsung_db -h localhost -c \"SELECT 1\")",
+      "Bash(\"C:\\Program Files\\PostgreSQL\\17\\bin\\pg_ctl\" -D \"C:\\Program Files\\PostgreSQL\\17\\data\" restart)",
+      "Bash(curl:*)",
+      "Bash(del get-categories.js)",
+      "Bash(npm run prisma:seed:*)",
+      "Bash(del:*)",
+      "Bash(npm run build:*)",
+      "Bash(if exist .next rmdir /s /q .next)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

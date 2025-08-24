@@ -1,0 +1,1563 @@
+/* 애플 스타일 관리자 대시보드 CSS */
+
+.dashboard {
+  min-height: 100vh;
+  background: #fafbfc;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 헤더 - 애플 스타일 */
+.header {
+  background: white;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #e5e5e7;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+}
+
+.headerLeft h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #1d1d1f;
+  font-weight: 600;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.backBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: #f7f8fa;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #5f6368;
+}
+
+.backBtn:hover {
+  background: linear-gradient(135deg, #e8f0fe 0%, #f3e5f5 100%);
+  color: #667eea;
+  border: 1px solid #d4dce6;
+}
+
+.backBtn svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* 사용자 메뉴 - 애플 스타일 */
+.userMenuWrapper {
+  position: relative;
+}
+
+.userMenuBtn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  background: rgba(0, 0, 0, 0.05);
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 14px;
+  color: #1d1d1f;
+}
+
+.userMenuBtn:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #e8f0fe;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #5f6368;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.userDropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 280px;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e5e5e7;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  animation: dropdownSlide 0.2s ease;
+}
+
+@keyframes dropdownSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdownHeader {
+  padding: 16px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  background: #f5f5f7;
+}
+
+.dropdownAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 16px;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.dropdownName {
+  font-weight: 600;
+  color: #1d1d1f;
+  font-size: 14px;
+}
+
+.dropdownEmail {
+  font-size: 12px;
+  color: #86868b;
+  margin-top: 2px;
+}
+
+.dropdownRole {
+  margin-top: 8px;
+  display: inline-block;
+}
+
+.dropdownRole .roleBadge {
+  padding: 4px 8px;
+  font-size: 0.75rem;
+}
+
+.dropdownDivider {
+  height: 1px;
+  background: #e5e5e7;
+}
+
+.dropdownItem {
+  width: 100%;
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-size: 14px;
+  color: #1d1d1f;
+  text-align: left;
+}
+
+.dropdownItem:hover {
+  background: #f5f5f7;
+}
+
+.dropdownItem svg {
+  width: 18px;
+  height: 18px;
+  color: #86868b;
+}
+
+/* 메인 콘텐츠 */
+.mainContent {
+  flex: 1;
+  padding: 2rem;
+}
+
+/* 기업 그리드 */
+.companyGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 1.5rem;
+  max-width: 1600px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* 새 기업 추가 카드 - 애플 스타일 */
+.addCard {
+  background: #fafbfc;
+  border: 2px dashed #c5cad2;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 160px;
+  gap: 12px;
+  padding: 24px;
+}
+
+.addCard:hover {
+  border-color: #8b95a7;
+  background: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.addCard:active {
+  transform: scale(0.98);
+}
+
+.addCardIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+}
+
+.addCardIcon svg {
+  width: 24px;
+  height: 24px;
+  color: white;
+}
+
+.addCardText {
+  font-size: 17px;
+  font-weight: 600;
+  color: #1d1d1f;
+}
+
+.addCardHint {
+  font-size: 13px;
+  color: #86868b;
+}
+
+/* 기업 카드 - 애플 스타일 */
+.companyCard {
+  background: white;
+  border-radius: 16px;
+  border: 2px solid #e5e5e7;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  padding: 24px;
+  gap: 20px;
+  align-items: flex-start;
+  min-height: 160px;
+}
+
+.companyCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  border-color: #c5cad2;
+}
+
+.companyCard:active {
+  transform: scale(0.98);
+}
+
+.companyCard.dragOver {
+  background: #f0f4ff;
+  border: 2px solid #007AFF;
+  box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
+}
+
+.cardIcon {
+  flex-shrink: 0;
+}
+
+.iconWrapper {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  background: #f8f9fa;
+  border: 2px solid #667eea;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  font-weight: 600;
+  color: #667eea;
+  position: relative;
+  box-shadow: 0 2px 4px rgba(102, 126, 234, 0.1);
+}
+
+.cardContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.cardMain h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1d1d1f;
+  line-height: 1.2;
+}
+
+.companyNameEn {
+  margin: 4px 0 0 0;
+  font-size: 14px;
+  color: #86868b;
+  font-weight: 400;
+}
+
+.cardDescription {
+  margin: 8px 0 0 0;
+  font-size: 14px;
+  color: #515154;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cardMeta {
+  display: flex;
+  gap: 24px;
+}
+
+.metaItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.metaLabel {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #86868b;
+  font-weight: 500;
+}
+
+.metaValue {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1d1d1f;
+}
+
+.statusActive {
+  color: #10b981;
+  font-weight: 600;
+}
+
+.statusInactive {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.cardActions {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.companyCard:hover .cardActions {
+  opacity: 1;
+}
+
+.actionBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: white;
+  border: 1px solid #c5cad2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.actionBtn:hover {
+  background: #f8f9fa;
+  border-color: #8b95a7;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.actionBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.actionBtn svg {
+  width: 16px;
+  height: 16px;
+  color: #1d1d1f;
+}
+
+/* 기업 상세 페이지 */
+.companyDetail {
+  background: #fafbfc;
+  min-height: calc(100vh - 64px);
+}
+
+/* 서브 헤더 */
+.subHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: white;
+  border-bottom: 2px solid #e5e5e7;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.subHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* 탭 네비게이션 */
+.tabNav {
+  display: flex;
+  gap: 4px;
+  background: #f7f8fa;
+  padding: 4px;
+  border-radius: 10px;
+}
+
+.tabButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #5f6368;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.tabButton:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.tabButton.active {
+  background: white;
+  color: #667eea;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  font-weight: 600;
+}
+
+.tabButton svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* 도구 모음 */
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 1.5rem 24px;
+  background: white;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  border: 1px solid #e5e5e7;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+/* AI 분석 툴바 */
+.analysisToolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 1.5rem 24px;
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, #f8f9fa 0%, #fafbfc 100%);
+  border-radius: 12px;
+  border: 2px solid #e5e5e7;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+.analysisLeft {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.analyzeBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.8rem 1.5rem;
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.95rem;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.analyzeBtn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
+
+.analyzeBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.analyzeBtn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.toolbarLeft {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.toolbarRight {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.dateFilter {
+  padding: 0.6rem 1rem;
+  border: 1px solid #c5cad2;
+  border-radius: 8px;
+  background: white;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 150px;
+}
+
+.dateFilter:focus {
+  outline: none;
+  border-color: #8b95a7;
+  box-shadow: 0 0 0 3px rgba(139, 149, 167, 0.1);
+}
+
+.addBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.addBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.addBtn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.categoryFilter {
+  padding: 0.6rem 1rem;
+  border: 1px solid #c5cad2;
+  border-radius: 8px;
+  background: white;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.categoryFilter:focus {
+  outline: none;
+  border-color: #8b95a7;
+  box-shadow: 0 0 0 3px rgba(139, 149, 167, 0.1);
+}
+
+.searchBox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  border: 1px solid #c5cad2;
+  border-radius: 8px;
+  background: white;
+  transition: all 0.2s;
+}
+
+.searchBox:focus-within {
+  border-color: #8b95a7;
+  box-shadow: 0 0 0 3px rgba(139, 149, 167, 0.1);
+}
+
+.searchBox svg {
+  width: 18px;
+  height: 18px;
+  color: #999;
+}
+
+.searchBox input {
+  border: none;
+  outline: none;
+  background: none;
+  flex: 1;
+  font-size: 0.9rem;
+}
+
+/* 날짜 선택기 */
+.dateSelector {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  border: 1px solid #c5cad2;
+  border-radius: 8px;
+  background: white;
+  transition: all 0.2s;
+}
+
+.dateSelector:focus-within {
+  border-color: #8b95a7;
+  box-shadow: 0 0 0 3px rgba(139, 149, 167, 0.1);
+}
+
+.dateSelector svg {
+  width: 18px;
+  height: 18px;
+  color: #8b95a7;
+}
+
+.dateSelector input {
+  border: none;
+  outline: none;
+  background: none;
+  font-size: 0.9rem;
+}
+
+/* 모달 */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal {
+  background: white;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 85vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s;
+  border: 2px solid #e5e5e7;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modalHeader {
+  padding: 1.5rem;
+  border-bottom: 2px solid #e5e5e7;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fafbfc;
+}
+
+.modalHeader h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeBtn svg {
+  width: 20px;
+  height: 20px;
+  color: #999;
+}
+
+.modalBody {
+  padding: 1.5rem;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.formGroup {
+  margin-bottom: 1rem;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #333;
+  font-size: 0.9rem;
+}
+
+.formGroup input,
+.formGroup textarea,
+.formGroup select {
+  width: 100%;
+  padding: 0.6rem;
+  border: 1px solid #c5cad2;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  background: #fafbfc;
+}
+
+.formGroup input:focus,
+.formGroup textarea:focus,
+.formGroup select:focus {
+  outline: none;
+  border-color: #8b95a7;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(139, 149, 167, 0.1);
+}
+
+.formHint {
+  display: block;
+  margin-top: 0.5rem;
+  color: #666;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.modalFooter {
+  padding: 1.5rem;
+  border-top: 2px solid #e5e5e7;
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  background: #fafbfc;
+}
+
+.cancelBtn {
+  padding: 0.6rem 1.2rem;
+  background: #f8f9fa;
+  color: #6b7280;
+  border: 1px solid #e5e5e7;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+}
+
+.cancelBtn:hover {
+  background: #f3f4f6;
+  border-color: #d4d4d8;
+}
+
+.saveBtn {
+  padding: 0.6rem 1.2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.saveBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.saveBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 테이블 */
+.dataSection {
+  margin: 0 24px 2rem 24px;
+}
+
+.dataSection h2 {
+  margin: 0 0 1rem 0;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.tableContainer {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e5e5e7;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table thead {
+  background: #f8f9fa;
+}
+
+.table th {
+  padding: 0.8rem 1rem;
+  text-align: left;
+  font-weight: 500;
+  color: #666;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #e5e5e7;
+}
+
+.table td {
+  padding: 0.8rem 1rem;
+  border-top: 1px solid #f0f0f2;
+  font-size: 0.9rem;
+}
+
+.table tbody tr:hover {
+  background: #f8f9fa;
+}
+
+.centerCell {
+  text-align: center;
+}
+
+.itemCell {
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.actions button {
+  background: none;
+  border: none;
+  padding: 0.3rem;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.actions button:hover {
+  opacity: 0.7;
+}
+
+.actions button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.actions button svg {
+  width: 16px;
+  height: 16px;
+  color: #666;
+}
+
+/* 트렌드 섹션 */
+.trendSection {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.trendSection h2 {
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.categoryCards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.categoryCard {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 1rem;
+  border: 1px solid #e0e0e0;
+}
+
+.categoryHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.8rem;
+}
+
+.categoryHeader h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.indexValue {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.indexValue svg {
+  width: 16px;
+  height: 16px;
+}
+
+.indexValue.positive {
+  color: #10b981;
+  font-weight: 600;
+}
+
+.indexValue.negative {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.categoryStats {
+  display: flex;
+  gap: 1rem;
+}
+
+.statItem {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.statItem span {
+  font-size: 0.75rem;
+  color: #999;
+}
+
+.statItem strong {
+  font-size: 0.9rem;
+  color: #333;
+}
+
+/* 분석 테이블 */
+.analysisTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.analysisTable thead {
+  background: #f8f9fa;
+}
+
+.analysisTable th {
+  padding: 0.8rem;
+  text-align: left;
+  font-weight: 500;
+  color: #666;
+  font-size: 0.85rem;
+}
+
+.analysisTable td {
+  padding: 0.8rem;
+  border-top: 1px solid #e0e0e0;
+  font-size: 0.9rem;
+}
+
+.analysisTable tbody tr:hover {
+  background: #f9f9f9;
+}
+
+.indexValue {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.indexValue.high {
+  color: #10b981;
+  font-weight: 600;
+}
+
+.indexValue.medium {
+  color: #f59e0b;
+  font-weight: 600;
+}
+
+.indexValue.low {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+/* 시스템 프롬프트 섹션 */
+.systemPromptSection {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 0 24px 2rem 24px;
+  border: 1px solid #e5e5e7;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.sectionHeader h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.sectionHeader h3 svg {
+  width: 20px;
+  height: 20px;
+  color: #667eea;
+}
+
+.editPromptBtn {
+  padding: 0.4rem 1rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.editPromptBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.promptEditBox {
+  margin-top: 1rem;
+}
+
+.promptEditBox textarea {
+  width: 100%;
+  padding: 1rem;
+  border: 1px solid #c5cad2;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  resize: vertical;
+  min-height: 120px;
+  font-family: inherit;
+  background: #fafbfc;
+}
+
+.promptEditBox textarea:focus {
+  outline: none;
+  border-color: #8b95a7;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(139, 149, 167, 0.1);
+}
+
+.promptActions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  justify-content: flex-end;
+}
+
+.promptDisplay {
+  padding: 1rem;
+  background: #fafbfc;
+  border-radius: 8px;
+  border: 1px solid #e5e5e7;
+  border-left: 4px solid #8b95a7;
+}
+
+.promptDisplay p {
+  margin: 0;
+  line-height: 1.6;
+  color: #333;
+  white-space: pre-wrap;
+}
+
+.noPrompt {
+  color: #999 !important;
+  font-style: italic;
+}
+
+.divider {
+  height: 2px;
+  background: #e5e5e7;
+  margin: 1rem 0;
+}
+
+/* 빈 상태 */
+.emptyState {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #999;
+}
+
+.emptyState svg {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 1rem;
+  color: #ddd;
+}
+
+.emptyState h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+  color: #666;
+}
+
+.emptyState p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+  .companyGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .tabNav {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .toolbar {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .toolbarLeft {
+    width: 100%;
+  }
+  
+  .categoryCards {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 로딩 */
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 1rem;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #f3f4f6;
+  border-top-color: #667eea;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 에러 토스트 */
+.errorToast {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background: #ef4444;
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  animation: slideInUp 0.3s;
+  z-index: 2000;
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.errorToast button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+/* 성공 토스트 */
+.successToast {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background: #10b981;
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  animation: slideInUp 0.3s;
+  z-index: 2000;
+}
+
+.successToast button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+/* 사용자 관리 스타일 */
+.userManagement {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.userHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding: 24px;
+  background: white;
+  border-radius: 16px;
+  border: 2px solid #e5e5e7;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.userHeader h2 {
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #1d1d1f;
+}
+
+.userHeader .addBtn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.userHeader .addBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.userTable {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 2px solid #e5e5e7;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.userTable .table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.userTable th {
+  background: #fafbfc;
+  padding: 16px;
+  text-align: left;
+  font-weight: 500;
+  color: #8b95a7;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #e5e5e7;
+}
+
+.userTable td {
+  padding: 16px;
+  border-bottom: 1px solid #f1f3f5;
+  color: #212529;
+  font-size: 0.95rem;
+}
+
+.userTable tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.userTable tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.userTable tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.roleBadge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.roleBadge.admin {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(102, 126, 234, 0.2);
+}
+
+.roleBadge.user {
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  color: white;
+  border: none;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+}
+
+.userTable .actions {
+  display: flex;
+  gap: 8px;
+}
+
+.userTable .actions button {
+  background: white;
+  border: 1px solid #c5cad2;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+}
+
+.userTable .actions button:hover {
+  background: #f8f9fa;
+  border-color: #8b95a7;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.userTable .actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.userTable .actions button svg {
+  width: 18px;
+  height: 18px;
+  color: #495057;
+}
+
+/* 글로벌 네비게이션 스타일 */
+.globalNav {
+  display: flex;
+  gap: 8px;
+  margin-left: 40px;
+  padding-left: 40px;
+  border-left: 2px solid #e5e5e7;
+}
+
+.navLink {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: #6b7280;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.navLink:hover {
+  background: #fafbfc;
+  color: #374151;
+}
+
+.navLink.active {
+  background: linear-gradient(135deg, #e8f0fe 0%, #f3e5f5 100%);
+  color: #667eea;
+  border: 1px solid #d4dce6;
+  font-weight: 600;
+}
+
+.navLink svg {
+  width: 18px;
+  height: 18px;
+}
+
+.divider {
+  width: 1px;
+  height: 24px;
+  background: #e9ecef;
+  margin: 0 16px;
+}
+
+.companyNav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.companyTitle {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #202124;
+}
+
