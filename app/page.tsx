@@ -174,7 +174,13 @@ export default function Home() {
     api.setToken(token)
     setUser(user)
     setIsAuthenticated(true)
-    loadData()
+    
+    // 관리자인 경우 관리자 페이지로 리다이렉트
+    if (user.role === 'ADMIN') {
+      window.location.href = '/admin'
+    } else {
+      loadData()
+    }
   }
 
   const handleLogout = () => {
