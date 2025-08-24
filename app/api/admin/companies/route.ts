@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { requireAdmin } from '@/lib/auth'
 
 // 테스트 모드용 메모리 저장소
 let testCompanies = [
@@ -59,10 +58,33 @@ export async function GET(request: NextRequest) {
 
 // POST /api/admin/companies - 새 기업 추가
 export async function POST(request: NextRequest) {
-  const authResult = await requireAdmin(request)
-  if (authResult instanceof Response) return authResult
-
   try {
+    // 토큰 확인
+    const token = request.headers.get('Authorization')?.replace('Bearer ', '')
+    if (!token) {
+      return NextResponse.json({ error: '인증이 필요합니다' }, { status: 401 })
+    }
+
+    // 토큰 검증 및 권한 확인
+    let userRole: string
+    try {
+      const decoded = JSON.parse(Buffer.from(token, 'base64').toString())
+      userRole = decoded.role
+    } catch {
+      try {
+        const { verifyToken } = await import('@/lib/auth')
+        const payload = verifyToken(token)
+        userRole = payload.role
+      } catch {
+        return NextResponse.json({ error: '유효하지 않은 토큰입니다' }, { status: 401 })
+      }
+    }
+
+    // 관리자 권한 확인
+    if (userRole !== 'ADMIN') {
+      return NextResponse.json({ error: '권한이 없습니다' }, { status: 403 })
+    }
+
     const body = await request.json()
     const { name, nameKr, description } = body
 
