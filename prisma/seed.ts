@@ -1,11 +1,11 @@
 import { PrismaClient } from '@prisma/client'
-import crypto from 'crypto'
+import * as bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
 // 비밀번호 해싱 함수
-function hashPassword(password: string): string {
-  return crypto.createHash('sha256').update(password).digest('hex')
+async function hashPassword(password: string): Promise<string> {
+  return bcrypt.hash(password, 12)
 }
 
 async function main() {
@@ -17,31 +17,41 @@ async function main() {
       where: { email: 'admin@ct123.kr' }
     })
 
-    if (existingAdmin) {
-      console.log('✅ Admin account already exists')
-      return
-    }
-
-    // 관리자 계정 생성
     const adminPassword = process.env.ADMIN_PASSWORD || 'Admin@123!'
-    const hashedPassword = hashPassword(adminPassword)
+    const hashedPassword = await hashPassword(adminPassword)
 
-    const admin = await prisma.user.create({
-      data: {
-        email: 'admin@ct123.kr',
-        password: hashedPassword,
-        name: 'CT123 Admin',
-        role: 'ADMIN',
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }
-    })
+    if (existingAdmin) {
+      // 기존 계정의 비밀번호 업데이트
+      const updatedAdmin = await prisma.user.update({
+        where: { email: 'admin@ct123.kr' },
+        data: {
+          password: hashedPassword,
+          updatedAt: new Date()
+        }
+      })
+      console.log('✅ Admin account password updated')
+      console.log(`   Email: ${updatedAdmin.email}`)
+      console.log(`   Password: ${adminPassword}`)
+    } else {
+      // 새 관리자 계정 생성
+      const admin = await prisma.user.create({
+        data: {
+          email: 'admin@ct123.kr',
+          password: hashedPassword,
+          name: 'CT123 Admin',
+          role: 'ADMIN',
+          createdAt: new Date(),
+          updatedAt: new Date()
+        }
+      })
 
-    console.log('✅ Admin account created successfully:')
-    console.log(`   Email: ${admin.email}`)
-    console.log(`   Name: ${admin.name}`)
-    console.log(`   Role: ${admin.role}`)
-    console.log(`   Password: ${adminPassword}`)
+      console.log('✅ Admin account created successfully:')
+      console.log(`   Email: ${admin.email}`)
+      console.log(`   Name: ${admin.name}`)
+      console.log(`   Role: ${admin.role}`)
+      console.log(`   Password: ${adminPassword}`)
+    }
+    
     console.log('')
     console.log('⚠️  IMPORTANT: Please change the admin password after first login!')
 
