@@ -4,7 +4,7 @@ module.exports = {
       name: 'ct123-app',
       script: 'npm',
       args: 'start',
-      cwd: './',
+      cwd: '/home/ubuntu/ct123',
       instances: 1,
       autorestart: true,
       watch: false,
