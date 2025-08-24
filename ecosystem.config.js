@@ -21,7 +21,7 @@ module.exports = {
       },
       env_production: {
         NODE_ENV: 'production',
-        PORT: process.env.PORT || 80,
+        PORT: process.env.PORT || 3000,
         HTTPS: process.env.HTTPS || 'true'
       },
       error_file: './logs/err.log',
