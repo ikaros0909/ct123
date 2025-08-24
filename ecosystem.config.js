@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: 'ct123-app',
+      name: 'ct123',
       script: 'npm',
       args: 'start',
       cwd: '/home/ubuntu/ct123',
