@@ -86,13 +86,13 @@ export async function POST(request: Request) {
       )
     }
 
-    // 임시 토큰 생성
-    const token = Buffer.from(JSON.stringify({
+    // JWT 토큰 생성 (테스트 모드에서도 동일한 토큰 사용)
+    const { generateToken } = await import('@/lib/auth')
+    const token = generateToken({
       userId: user.id,
       email: user.email,
-      role: user.role,
-      exp: Date.now() + 7 * 24 * 60 * 60 * 1000 // 7일
-    })).toString('base64')
+      role: user.role as any
+    })
 
     return NextResponse.json({
       message: '로그인에 성공했습니다. (테스트 모드)',

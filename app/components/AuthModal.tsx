@@ -135,13 +135,6 @@ export default function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) 
           </button>
         </div>
 
-        {isLoginMode && (
-          <div className="mt-4 p-3 bg-gray-100 rounded text-sm">
-            <p className="font-semibold">테스트 계정:</p>
-            <p>Email: admin@samsung.com</p>
-            <p>Password: admin123</p>
-          </div>
-        )}
       </div>
     </div>
   )

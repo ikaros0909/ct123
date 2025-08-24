@@ -58,14 +58,10 @@ export async function requireAdmin(request: NextRequest): Promise<TokenPayload |
     
     return payload
   } catch (error) {
+    console.error('Token verification error:', error)
     return new Response(JSON.stringify({ error: '유효하지 않은 토큰입니다' }), {
       status: 401,
       headers: { 'Content-Type': 'application/json' },
     })
   }
-  
-  return new Response(JSON.stringify({ error: '유효하지 않은 토큰입니다' }), {
-    status: 401,
-    headers: { 'Content-Type': 'application/json' },
-  })
 }
