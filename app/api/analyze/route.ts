@@ -176,7 +176,6 @@ export async function POST(request: NextRequest) {
             weight: item.weight,
             index: aiHIndex * item.weight,
             category: item.category,
-            source: source,
             userId: req.user?.userId
           }
 
@@ -211,7 +210,7 @@ export async function POST(request: NextRequest) {
           console.error(`   - Error Type: ${error?.name || 'Unknown'}`)
           console.error(`   - Error Message: ${errorMessage}`)
           console.error(`   - Stack Trace:`, error?.stack)
-          console.log(` GPT OPENAI_API_KEY: ${process.env.OPENAI_API_KEY}`)
+          // console.log(` GPT OPENAI_API_KEY: ${process.env.OPENAI_API_KEY}`)
           
           // 오류 상세 정보 저장
           status[item.sequenceNumber] = {

@@ -131,7 +131,7 @@ export default function Home() {
     
     try {
       // 선택된 기업의 데이터 로드
-      const [mainDataResponse, analysisData] = await Promise.all([
+      const [mainDataResponse, analysisDataResponse] = await Promise.all([
         api.getSamsungMain(selectedCompany.id),
         api.getSamsungAnalysis(selectedCompany.id)
       ])
@@ -159,11 +159,23 @@ export default function Home() {
         source: item.source
       }))
       
+      // Analysis 데이터를 SamsungAnalysisData 형태로 변환
+      const transformedAnalysisData = analysisDataResponse.map((item: any) => ({
+        날짜: item.date ? new Date(item.date).toISOString().split('T')[0] : '',
+        AI_H지수: item.scale || 0,
+        지수X가중치: item.index || 0,
+        구분: item.category || '',
+        연번: item.sequenceNumber || 0,
+        분야: '', // field는 아직 DB에 없음
+        // 원본 데이터도 보관
+        ...item
+      }))
+      
       console.log(`${selectedCompany.nameKr || selectedCompany.name} 메인 데이터:`, transformedMainData.length, '개')
-      console.log(`${selectedCompany.nameKr || selectedCompany.name} 분석 데이터:`, analysisData.length, '개')
+      console.log(`${selectedCompany.nameKr || selectedCompany.name} 분석 데이터:`, transformedAnalysisData.length, '개')
       
       setMainData(transformedMainData)
-      setAnalysisData(analysisData)
+      setAnalysisData(transformedAnalysisData)
     } catch (error) {
       console.error('데이터 로드 실패:', error)
     }
@@ -713,8 +725,12 @@ export default function Home() {
 				if (a.days > 0) d.setDate(d.getDate() - a.days)
 				const key = a.days === 0 ? dateKey(kstNow) : dateKey(d)
 				const v = avgByDate.get(key)
-				if (typeof v === 'number' && !Number.isNaN(v)) points.push({ label: a.label, value: v })
+				// 실제 데이터가 있을 때만 추가
+				if (typeof v === 'number' && !Number.isNaN(v)) {
+					points.push({ label: a.label, value: v })
+				}
 			}
+			// 데이터가 없으면 표시하지 않음
 			if (points.length === 0) return null
 			return (
 				<div className="mb-6 text-sm">
@@ -778,28 +794,44 @@ export default function Home() {
                 const d = new Date(at10)
                 if (a.days > 0) d.setDate(d.getDate() - a.days)
                 const v = findNearest(a.days === 0 ? kstNow : d)
-                if (typeof v === 'number') points.push({ label: a.label, value: Number(v.toFixed(2)) })
-                else points.push({ label: a.label, value: synth(i) })
+                // 실제 데이터가 있을 때만 추가
+                if (typeof v === 'number') {
+                  points.push({ label: a.label, value: Number(v.toFixed(2)) })
+                }
               })
 
             	return (
                 <>
                 <div className="text-sm font-semibold text-gray-900 mb-2">{t('CompositeIndexTrend')} : As of 10:00, {fmtMDY}</div>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={points}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="label" />
-                    <YAxis domain={[-3, 3]} />
-                    <Tooltip />
-                    <Line 
-                      type="monotone" 
-                      dataKey="value" 
-                      stroke="#0ea5e9" 
-                      strokeWidth={3}
-                      dot={{ fill: '#0ea5e9', strokeWidth: 2, r: 4 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+                {points.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={300}>
+                    <LineChart data={points}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="label" />
+                      <YAxis domain={[-3, 3]} />
+                      <Tooltip />
+                      <Line 
+                        type="monotone" 
+                        dataKey="value" 
+                        stroke="#0ea5e9" 
+                        strokeWidth={3}
+                        dot={{ fill: '#0ea5e9', strokeWidth: 2, r: 4 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-[300px] text-gray-500">
+                    <div className="text-center">
+                      <svg className="mx-auto h-12 w-12 text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      </svg>
+                      <p className="text-sm">{lang === 'ko' ? '분석 데이터가 없습니다' : 'No analysis data available'}</p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        {lang === 'ko' ? 'AI 분석을 실행하여 데이터를 생성해주세요' : 'Please run AI analysis to generate data'}
+                      </p>
+                    </div>
+                  </div>
+                )}
                 </>
               )
             })()}
