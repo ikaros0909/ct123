@@ -191,6 +191,13 @@ export default function AdminDashboard() {
     newPassword: '',
     confirmPassword: ''
   })
+  const [showAnalysisConfirmModal, setShowAnalysisConfirmModal] = useState(false)
+  const [analysisProgress, setAnalysisProgress] = useState(0)
+  const [analysisStatus, setAnalysisStatus] = useState<Record<string, {status: string, item?: string}>>({})
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [showDetailedLog, setShowDetailedLog] = useState(false)
+  const [analysisLogs, setAnalysisLogs] = useState<string[]>([])
+  const [analysisCompleted, setAnalysisCompleted] = useState(false)
 
   // 폼 데이터
   const [companyForm, setCompanyForm] = useState({
@@ -662,7 +669,7 @@ export default function AdminDashboard() {
     return totals
   }
 
-  if (!isAuthenticated || loading) {
+  if (!isAuthenticated) {
     return (
       <div className={styles.loading}>
         <div className={styles.spinner}></div>
@@ -1221,73 +1228,39 @@ export default function AdminDashboard() {
                   </div>
                   <button 
                     className={styles.analyzeBtn}
-                    onClick={async () => {
+                    onClick={() => {
                       if (!selectedDate) {
                         setError('분석할 날짜를 선택해주세요');
                         return;
                       }
-                      
-                      if (confirm(`${selectedDate} 날짜로 AI 분석을 실행하시겠습니까?\n기존 분석 데이터가 있다면 덮어쓰여집니다.`)) {
-                        setLoading(true);
-                        try {
-                          const token = localStorage.getItem('token');
-                          
-                          // 모든 분석 항목 가져오기
-                          const items = mainData.map(item => item.sequenceNumber);
-                          
-                          const res = await fetch('/api/analyze', {
-                            method: 'POST',
-                            headers: {
-                              'Content-Type': 'application/json',
-                              'Authorization': `Bearer ${token}`
-                            },
-                            body: JSON.stringify({
-                              companyId: selectedCompany?.id,
-                              date: selectedDate,
-                              selectionMode: 'all',
-                              items: items
-                            })
-                          });
-                          
-                          if (res.ok) {
-                            const result = await res.json();
-                            setSuccessMessage(`AI 분석이 완료되었습니다. ${result.analyzed}개 항목 분석 완료`);
-                            // 분석 데이터 다시 로드
-                            if (selectedCompany) {
-                              loadCompanyData(selectedCompany.id);
-                            }
-                          } else {
-                            const error = await res.json();
-                            setError(error.error || 'AI 분석에 실패했습니다');
-                          }
-                        } catch (err) {
-                          console.error('AI 분석 오류:', err);
-                          setError('AI 분석 중 오류가 발생했습니다');
-                        } finally {
-                          setLoading(false);
-                        }
-                      }
+                      setAnalysisCompleted(false);
+                      setShowDetailedLog(false);
+                      setAnalysisLogs([]);
+                      setAnalysisProgress(0);
+                      setAnalysisStatus({});
+                      setShowAnalysisConfirmModal(true);
                     }}
-                    disabled={loading || !selectedDate}
+                    disabled={isAnalyzing || !selectedDate}
                     style={{ 
                       backgroundColor: '#3b82f6',
                       color: 'white',
                       padding: '0.75rem 1.5rem',
                       borderRadius: '0.5rem',
                       border: 'none',
-                      cursor: loading || !selectedDate ? 'not-allowed' : 'pointer',
+                      cursor: isAnalyzing || !selectedDate ? 'not-allowed' : 'pointer',
                       fontSize: '1rem',
                       fontWeight: '500',
                       display: 'flex',
                       alignItems: 'center',
                       gap: '0.5rem',
-                      opacity: loading || !selectedDate ? 0.5 : 1
+                      opacity: isAnalyzing || !selectedDate ? 0.5 : 1
                     }}
                   >
                     <Icons.TrendUp />
-                    <span>{loading ? 'AI 분석 중...' : 'AI 분석 실행'}</span>
+                    <span>{isAnalyzing ? 'AI 분석 중...' : 'AI 분석 실행'}</span>
                   </button>
                 </div>
+
 
                 <div className={styles.divider} />
 
@@ -1872,6 +1845,446 @@ export default function AdminDashboard() {
             }
           }}
         />
+      )}
+
+      {/* AI 분석 확인 모달 */}
+      {showAnalysisConfirmModal && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modal} style={{ 
+            maxWidth: '600px', 
+            height: '80vh',
+            maxHeight: '800px',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden'
+          }}>
+            <div className={styles.modalHeader}>
+              <h2>AI 분석 실행 확인</h2>
+              <button 
+                className={styles.closeBtn} 
+                onClick={() => {
+                  if (!isAnalyzing) {
+                    setShowAnalysisConfirmModal(false);
+                    setShowDetailedLog(false);
+                    setAnalysisLogs([]);
+                    setAnalysisCompleted(false);
+                  }
+                }}
+                disabled={isAnalyzing}
+                title={isAnalyzing ? '분석 중에는 닫을 수 없습니다' : '닫기'}
+              >
+                <Icons.Close />
+              </button>
+            </div>
+
+            <div className={styles.modalBody} style={{
+              flex: 1,
+              overflowY: 'auto',
+              overflowX: 'hidden',
+              padding: '1.5rem',
+              minHeight: 0
+            }}>
+              {!isAnalyzing && !analysisCompleted ? (
+                <>
+                  <div style={{ 
+                    padding: '1.5rem',
+                    backgroundColor: '#fef3c7',
+                    borderRadius: '0.5rem',
+                    marginBottom: '1.5rem'
+                  }}>
+                    <div style={{ 
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: '0.75rem'
+                    }}>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, marginTop: '2px' }}>
+                        <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" 
+                          stroke="#d97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      <div>
+                        <h3 style={{ margin: '0 0 0.5rem 0', color: '#92400e', fontSize: '1rem', fontWeight: '600' }}>
+                          AI 분석을 실행하시겠습니까?
+                        </h3>
+                        <p style={{ margin: '0 0 0.5rem 0', color: '#78350f', fontSize: '0.875rem' }}>
+                          선택한 날짜: <strong>{selectedDate}</strong>
+                        </p>
+                        <p style={{ margin: 0, color: '#78350f', fontSize: '0.875rem' }}>
+                          {mainData.length}개의 분석 항목에 대해 AI 분석이 실행됩니다.
+                          기존 분석 데이터가 있다면 덮어쓰여집니다.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ 
+                    padding: '1rem',
+                    backgroundColor: '#f3f4f6',
+                    borderRadius: '0.5rem',
+                    marginBottom: '1rem'
+                  }}>
+                    <h4 style={{ margin: '0 0 0.75rem 0', fontSize: '0.875rem', color: '#374151' }}>
+                      분석 대상 카테고리:
+                    </h4>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                      {categories.map(cat => {
+                        const count = mainData.filter(item => item.category === cat).length;
+                        return (
+                          <span key={cat} style={{ 
+                            padding: '0.25rem 0.75rem',
+                            backgroundColor: '#fff',
+                            borderRadius: '1rem',
+                            fontSize: '0.75rem',
+                            color: '#374151',
+                            border: '1px solid #e5e7eb'
+                          }}>
+                            {cat} ({count}개)
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </>
+              ) : (isAnalyzing || analysisCompleted) ? (
+                <div>
+                  <div style={{ marginBottom: '1.5rem' }}>
+                    <div style={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center',
+                      marginBottom: '0.75rem'
+                    }}>
+                      <span style={{ 
+                        fontSize: '1rem', 
+                        fontWeight: '600', 
+                        color: '#111827' 
+                      }}>
+                        AI 분석 진행 중...
+                      </span>
+                      <span style={{ 
+                        fontSize: '1.125rem', 
+                        fontWeight: '600',
+                        color: '#3b82f6' 
+                      }}>
+                        {Math.round(analysisProgress)}%
+                      </span>
+                    </div>
+                    <div style={{ 
+                      width: '100%', 
+                      height: '20px', 
+                      backgroundColor: '#e5e7eb', 
+                      borderRadius: '10px',
+                      overflow: 'hidden',
+                      boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.06)'
+                    }}>
+                      <div style={{ 
+                        width: `${analysisProgress}%`, 
+                        height: '100%', 
+                        background: 'linear-gradient(90deg, #3b82f6 0%, #6366f1 50%, #8b5cf6 100%)',
+                        transition: 'width 0.5s ease-in-out',
+                        borderRadius: '10px',
+                        boxShadow: '0 2px 8px rgba(59, 130, 246, 0.5)',
+                        position: 'relative',
+                        overflow: 'hidden'
+                      }}>
+                        <div style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)',
+                          animation: 'shimmer 2s infinite'
+                        }} />
+                      </div>
+                    </div>
+                  </div>
+
+                  {Object.keys(analysisStatus).length > 0 && (
+                    <div style={{ 
+                      padding: '0.75rem',
+                      backgroundColor: '#f9fafb',
+                      borderRadius: '0.5rem',
+                      fontSize: '0.75rem',
+                      color: '#6b7280',
+                      marginBottom: '1rem'
+                    }}>
+                      <div style={{
+                        maxHeight: '150px',
+                        overflowY: 'auto',
+                        overflowX: 'hidden'
+                      }}>
+                        {Object.entries(analysisStatus).map(([key, status]) => (
+                          <div key={key} style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '0.5rem',
+                            marginBottom: '0.25rem',
+                            padding: '0.25rem'
+                          }}>
+                            <span style={{ 
+                              display: 'inline-block',
+                              width: '16px',
+                              height: '16px',
+                              lineHeight: '16px',
+                              textAlign: 'center',
+                              borderRadius: '50%',
+                              backgroundColor: status.status === 'success' ? '#d1fae5' : 
+                                            status.status === 'error' ? '#fee2e2' : '#f3f4f6',
+                              color: status.status === 'success' ? '#065f46' : 
+                                    status.status === 'error' ? '#991b1b' : '#6b7280',
+                              fontSize: '0.625rem',
+                              fontWeight: '600'
+                            }}>
+                              {status.status === 'success' ? '✓' : 
+                               status.status === 'error' ? '✗' : '●'}
+                            </span>
+                            <span style={{ flex: 1 }}>
+                              항목 {key}: {status.item || '분석 중...'}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div style={{ 
+                    marginTop: '1rem',
+                    padding: '0.75rem',
+                    backgroundColor: '#eff6ff',
+                    borderRadius: '0.5rem',
+                    fontSize: '0.813rem',
+                    color: '#1e40af',
+                    textAlign: 'center'
+                  }}>
+                    {analysisCompleted ? (
+                      <span style={{ color: '#059669', fontWeight: '600' }}>
+                        ✓ AI 분석이 완료되었습니다!
+                      </span>
+                    ) : (
+                      'AI가 각 항목을 분석하고 있습니다. 잠시만 기다려주세요...'
+                    )}
+                  </div>
+                  
+                  {/* 자세히 보기 버튼 */}
+                  <div style={{ 
+                    marginTop: '1rem',
+                    textAlign: 'center'
+                  }}>
+                    <button
+                      onClick={() => setShowDetailedLog(!showDetailedLog)}
+                      style={{
+                        padding: '0.5rem 1rem',
+                        fontSize: '0.875rem',
+                        color: '#3b82f6',
+                        backgroundColor: 'transparent',
+                        border: '1px solid #3b82f6',
+                        borderRadius: '0.375rem',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        transition: 'all 0.2s'
+                      }}
+                      onMouseOver={(e) => {
+                        e.currentTarget.style.backgroundColor = '#eff6ff';
+                      }}
+                      onMouseOut={(e) => {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                      }}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        {showDetailedLog ? (
+                          <polyline points="18 15 12 9 6 15" />
+                        ) : (
+                          <polyline points="6 9 12 15 18 9" />
+                        )}
+                      </svg>
+                      {showDetailedLog ? '로그 숨기기' : '자세히 보기'}
+                    </button>
+                  </div>
+                  
+                  {/* 상세 로그 영역 */}
+                  {showDetailedLog && (
+                    <div style={{
+                      marginTop: '1rem',
+                      padding: '1rem',
+                      backgroundColor: '#1e293b',
+                      borderRadius: '0.5rem',
+                      fontFamily: 'monospace',
+                      fontSize: '0.75rem',
+                      color: '#94a3b8',
+                      border: '1px solid #334155',
+                      marginBottom: '1rem'
+                    }}>
+                      <div style={{ marginBottom: '0.5rem', color: '#64748b', fontSize: '0.7rem' }}>
+                        [ANALYSIS LOG]
+                      </div>
+                      <div style={{
+                        maxHeight: '250px',
+                        overflowY: 'auto',
+                        overflowX: 'hidden',
+                        paddingRight: '0.5rem'
+                      }}>
+                        {analysisLogs.length > 0 ? (
+                          analysisLogs.map((log, index) => (
+                            <div key={index} style={{ 
+                              marginBottom: '0.25rem',
+                              whiteSpace: 'pre-wrap',
+                              wordBreak: 'break-word'
+                            }}>
+                              {log}
+                            </div>
+                          ))
+                        ) : (
+                          <div style={{ color: '#475569' }}>분석 로그가 여기에 표시됩니다...</div>
+                        )}
+                        {Object.entries(analysisStatus).map(([key, status]) => (
+                          <div key={key} style={{ 
+                            marginBottom: '0.25rem',
+                            color: status.status === 'success' ? '#10b981' : 
+                                  status.status === 'error' ? '#ef4444' : '#94a3b8'
+                          }}>
+                            [{new Date().toLocaleTimeString()}] 항목 {key}: {status.item} - {status.status === 'success' ? '완료' : status.status === 'error' ? '실패' : '분석 중'}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : null}
+            </div>
+
+            {(!isAnalyzing || analysisCompleted) && (
+              <div className={styles.modalFooter} style={{
+                borderTop: '1px solid #e5e7eb',
+                padding: '1rem 1.5rem',
+                display: 'flex',
+                justifyContent: 'flex-end',
+                gap: '0.75rem',
+                backgroundColor: '#fff',
+                borderRadius: '0 0 0.75rem 0.75rem',
+                flexShrink: 0
+              }}>
+                <button 
+                  className={styles.cancelBtn} 
+                  onClick={() => {
+                    setShowAnalysisConfirmModal(false);
+                    setShowDetailedLog(false);
+                    setAnalysisLogs([]);
+                    setAnalysisCompleted(false);
+                  }}
+                >
+                  {analysisCompleted ? '닫기' : '취소'}
+                </button>
+                {!analysisCompleted && (
+                  <button 
+                    className={styles.saveBtn}
+                    onClick={async () => {
+                      setIsAnalyzing(true);
+                      setAnalysisProgress(0);
+                      setAnalysisStatus({});
+                      setAnalysisLogs([]);
+                      
+                      // 초기 로그 추가
+                      const addLog = (message: string) => {
+                        setAnalysisLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] ${message}`]);
+                      };
+                      
+                      addLog('AI 분석 시작...');
+                      addLog(`분석 대상: ${selectedCompany?.nameKr || selectedCompany?.name}`);
+                      addLog(`분석 날짜: ${selectedDate}`);
+                      addLog(`총 ${mainData.length}개 항목 분석 예정`);
+                      
+                      // 진행률 시뮬레이션
+                      const progressInterval = setInterval(() => {
+                        setAnalysisProgress(prev => {
+                          if (prev >= 90) return prev;
+                          const increment = Math.random() * 10;
+                          if (prev + increment > 30 && prev < 30) {
+                            addLog('OpenAI API 연결 중...');
+                          }
+                          if (prev + increment > 50 && prev < 50) {
+                            addLog('데이터 분석 진행 중...');
+                          }
+                          if (prev + increment > 70 && prev < 70) {
+                            addLog('분석 결과 저장 중...');
+                          }
+                          return prev + increment;
+                        });
+                      }, 500);
+                    
+                    try {
+                      const token = localStorage.getItem('token');
+                      
+                      // 모든 분석 항목 가져오기
+                      const items = mainData.map(item => item.sequenceNumber);
+                      
+                      addLog('API 요청 전송...');
+                      const res = await fetch('/api/analyze', {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                          'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                          companyId: selectedCompany?.id,
+                          date: selectedDate,
+                          selectionMode: 'all',
+                          items: items
+                        })
+                      });
+                      
+                      // 시뮬레이션 중단
+                      clearInterval(progressInterval);
+                      
+                      if (res.ok) {
+                        const result = await res.json();
+                        setAnalysisProgress(100);
+                        
+                        // 분석 상태 정보 설정
+                        if (result.status) {
+                          setAnalysisStatus(result.status);
+                        }
+                        
+                        addLog(`✓ 분석 완료! ${result.newData?.length || 0}개 항목 처리됨`);
+                        addLog('모든 분석이 성공적으로 완료되었습니다.');
+                        
+                        setSuccessMessage(`AI 분석이 완료되었습니다. ${result.newData?.length || 0}개 항목 분석 완료`);
+                        setAnalysisCompleted(true);
+                        
+                        // 분석 데이터 다시 로드
+                        if (selectedCompany) {
+                          loadCompanyData(selectedCompany.id);
+                        }
+                      } else {
+                        const error = await res.json();
+                        addLog(`✗ 오류 발생: ${error.error || 'AI 분석에 실패했습니다'}`);
+                        setError(error.error || 'AI 분석에 실패했습니다');
+                        setAnalysisCompleted(true);
+                      }
+                    } catch (err) {
+                      clearInterval(progressInterval);
+                      console.error('AI 분석 오류:', err);
+                      addLog(`✗ 오류 발생: ${err instanceof Error ? err.message : 'AI 분석 중 오류가 발생했습니다'}`);
+                      setError('AI 분석 중 오류가 발생했습니다');
+                      setAnalysisCompleted(true);
+                    } finally {
+                      setIsAnalyzing(false);
+                    }
+                  }}
+                    style={{ 
+                      backgroundColor: '#3b82f6',
+                      color: 'white'
+                    }}
+                  >
+                    <Icons.TrendUp />
+                    분석 시작
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
       )}
 
       {/* 에러 메시지 */}

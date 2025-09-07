@@ -1,5 +1,14 @@
 /* 애플 스타일 관리자 대시보드 CSS */
 
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 .dashboard {
   min-height: 100vh;
   background: #fafbfc;

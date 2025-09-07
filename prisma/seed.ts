@@ -17,7 +17,7 @@ async function main() {
       where: { email: 'admin@ct123.kr' }
     })
 
-    const adminPassword = process.env.ADMIN_PASSWORD || 'Admin@123!'
+    const adminPassword = process.env.ADMIN_PASSWORD || 'qwer!234'
     const hashedPassword = await hashPassword(adminPassword)
 
     if (existingAdmin) {
