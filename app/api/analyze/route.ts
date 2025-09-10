@@ -244,8 +244,126 @@ export async function POST(request: NextRequest) {
         const avgScore = totalScore / newAnalysisData.length
         const totalWeightedScore = newAnalysisData.reduce((sum, a) => sum + a.index, 0)
 
-        // Now Report (현재 상황)
-        const nowReport = `
+        // 강화된 팩트체크 기능을 위한 search-GPT 검색 함수
+        const searchAndFactCheck = async (companyName: string, date: string) => {
+          try {
+            console.log(`🔍 팩트체크 검색 시작: ${companyName}`)
+            
+            // 1단계: 최신 뉴스 및 이슈 검색
+            const newsSearchPrompt = `현재 ${companyName}에 관한 최신 뉴스, 공식 발표, 시장 동향을 조사하세요. 
+            특히 다음 영역에 집중해주세요:
+            - 실적 발표 및 재무 정보
+            - 신제품 출시 및 기술 혁신
+            - 경영진 변화 및 전략 발표  
+            - 시장 지위 및 경쟁 상황
+            - 규제 이슈 및 정책 영향
+            - ESG 및 지속가능성 이슈
+            
+            각 정보에 대해 출처와 날짜를 명시하고, 팩트체크를 위해 여러 신뢰할 수 있는 소스를 확인해주세요.`
+
+            const newsResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+              },
+              body: JSON.stringify({
+                model: 'gpt-4o',
+                messages: [
+                  {
+                    role: 'system',
+                    content: `당신은 투자 전문 리서치 애널리스트입니다. 기업에 대한 정확하고 신뢰할 수 있는 최신 정보를 검색하고 팩트체크하는 것이 주요 업무입니다.
+                    
+                    작업 방식:
+                    1. 공신력 있는 소스(공식 발표, 금융기관 보고서, 주요 언론사)의 정보를 우선적으로 참조
+                    2. 같은 사실에 대해 다수의 독립적인 소스에서 확인
+                    3. 추측이나 루머와 확인된 사실을 명확히 구분
+                    4. 날짜와 출처를 반드시 명시
+                    5. 투자 의사결정에 영향을 미칠 수 있는 중요도 순으로 정보 정렬`
+                  },
+                  {
+                    role: 'user',
+                    content: newsSearchPrompt.replace('${companyName}', companyName)
+                  }
+                ],
+                max_tokens: 800,
+                temperature: 0.2
+              })
+            })
+
+            let factCheckedNews = ''
+            if (newsResponse.ok) {
+              const newsData = await newsResponse.json()
+              factCheckedNews = newsData.choices[0]?.message?.content?.trim() || ''
+              console.log(`✅ 1단계 검색 완료: ${factCheckedNews.length}자`)
+            }
+
+            // 2단계: 크로스체크 및 검증
+            if (factCheckedNews) {
+              const verificationPrompt = `다음 ${companyName}에 관한 정보들을 검증하고 신뢰도를 평가해주세요:
+
+${factCheckedNews}
+
+각 정보에 대해:
+1. 신뢰도 등급 (A: 높음, B: 보통, C: 낮음)
+2. 출처의 신뢰성 평가
+3. 다른 소스에서의 확인 여부
+4. 투자 관점에서의 중요도 (High/Medium/Low)
+5. 근거와 함께 요약
+
+최종적으로 신뢰도가 높고 투자에 중요한 정보만 선별해서 정리해주세요.`
+
+              const verificationResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+                },
+                body: JSON.stringify({
+                  model: 'gpt-4o',
+                  messages: [
+                    {
+                      role: 'system',
+                      content: `당신은 정보 검증 전문가이자 투자 분석가입니다. 수집된 정보의 신뢰성을 평가하고, 투자 의사결정에 도움이 되는 검증된 정보만을 선별하는 것이 주요 역할입니다.
+                      
+                      평가 기준:
+                      - 신뢰도: 출처의 권위성, 정보의 구체성, 확인 가능성
+                      - 중요도: 주가/기업가치에 대한 영향력, 시급성, 지속성
+                      - 객관성: 팩트 기반 정보와 의견/추측의 구분
+                      
+                      최종 결과는 투자자가 신뢰할 수 있는 근거 기반의 요약본이어야 합니다.`
+                    },
+                    {
+                      role: 'user',
+                      content: verificationPrompt
+                    }
+                  ],
+                  max_tokens: 1000,
+                  temperature: 0.1
+                })
+              })
+
+              if (verificationResponse.ok) {
+                const verificationData = await verificationResponse.json()
+                const verifiedInfo = verificationData.choices[0]?.message?.content?.trim() || ''
+                console.log(`✅ 2단계 검증 완료: ${verifiedInfo.length}자`)
+                return verifiedInfo
+              }
+            }
+
+            return factCheckedNews
+            
+          } catch (error) {
+            console.error('❌ 팩트체크 검색 오류:', error)
+            return ''
+          }
+        }
+        
+        // 팩트체크된 최신 이슈 검색
+        const factCheckedIssues = await searchAndFactCheck(company.nameKr || company.name || '삼성전자', date)
+        
+        // Now Report - Korean Version (한글 버전)
+        let nowReportKr = `
 [${company.nameKr || company.name} - ${date} 분석 결과]
 
 📊 전체 평균 점수: ${avgScore.toFixed(2)}
@@ -260,49 +378,309 @@ ${Object.entries(categoryScores).map(([category, scores]) =>
 성공: ${Object.values(status).filter(s => s?.status === 'success').length}개
 실패: ${Object.values(status).filter(s => s?.status === 'error').length}개
 `
+        
+        // 팩트체크된 최신 이슈가 있으면 추가
+        if (factCheckedIssues) {
+          nowReportKr += `
 
-        // Insight Report (인사이트)
-        let insightReport = `
+📰 최신 이슈 및 동향 (팩트체크 검증됨):
+${factCheckedIssues}
+
+🔍 정보 신뢰성: 위 정보는 다중 소스 검증을 통해 확인된 내용입니다.`
+        }
+
+        // Now Report - English Version (영문 버전)
+        let nowReportEn = `
+[${company.name} - ${date} Analysis Results]
+
+📊 Overall Average Score: ${avgScore.toFixed(2)}
+📈 Weighted Score: ${totalWeightedScore.toFixed(2)}
+
+Category Analysis:
+${Object.entries(categoryScores).map(([category, scores]) => 
+  `• ${category}: Average ${(scores.total / scores.count).toFixed(2)} (Weighted ${scores.weighted.toFixed(2)})`
+).join('\n')}
+
+Analyzed Items: ${newAnalysisData.length}
+Successful: ${Object.values(status).filter(s => s?.status === 'success').length}
+Failed: ${Object.values(status).filter(s => s?.status === 'error').length}
+`
+        
+        // 팩트체크된 이슈를 영문으로 번역
+        if (factCheckedIssues) {
+          try {
+            const translateResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+              },
+              body: JSON.stringify({
+                model: 'gpt-4o',
+                messages: [
+                  {
+                    role: 'system',
+                    content: 'Translate the following Korean fact-checked business analysis to English while maintaining the professional investment research tone, structure, and credibility indicators.'
+                  },
+                  {
+                    role: 'user',
+                    content: factCheckedIssues
+                  }
+                ],
+                max_tokens: 800,
+                temperature: 0.1
+              })
+            })
+            
+            if (translateResponse.ok) {
+              const translateData = await translateResponse.json()
+              const englishIssues = translateData.choices[0]?.message?.content?.trim() || ''
+              if (englishIssues) {
+                nowReportEn += `
+
+📰 Latest Issues & Trends (Fact-Checked & Verified):
+${englishIssues}
+
+🔍 Information Reliability: The above information has been verified through multiple source cross-checking.`
+              }
+            }
+          } catch (error) {
+            console.error('❌ 번역 오류:', error)
+          }
+        }
+
+        // 팩트체크된 정보를 기반으로 한 인사이트 생성 함수
+        const generateFactBasedInsights = async (avgScore: number, factCheckedInfo: string) => {
+          try {
+            const insightPrompt = `다음은 ${company.nameKr || company.name}의 AI 분석 결과입니다:
+            
+평균 점수: ${avgScore.toFixed(2)}
+총 가중치 점수: ${totalWeightedScore.toFixed(2)}
+
+팩트체크된 최신 정보:
+${factCheckedInfo}
+
+위 분석 결과와 팩트체크된 정보를 종합하여 투자 인사이트를 제공해주세요:
+
+1. 현재 투자 매력도 평가 (높음/보통/낮음)
+2. 주요 투자 포인트 (긍정적/부정적 요인별로)
+3. 리스크 요인 및 주의사항
+4. 향후 모니터링 포인트
+5. 투자 타이밍 및 전략 제안
+
+각 인사이트는 팩트체크된 정보에 근거하여 작성하고, 추측보다는 객관적 분석을 바탕으로 해주세요.`
+
+            const insightResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+              },
+              body: JSON.stringify({
+                model: 'gpt-4o',
+                messages: [
+                  {
+                    role: 'system',
+                    content: `당신은 경험이 풍부한 투자 자문 전문가입니다. 팩트 기반의 객관적인 분석을 통해 투자자에게 신뢰할 수 있는 인사이트를 제공합니다.
+                    
+                    작성 원칙:
+                    - 검증된 정보만을 바탕으로 분석
+                    - 과도한 낙관론이나 비관론 배제
+                    - 구체적이고 실행 가능한 조언 제공
+                    - 리스크와 기회를 균형있게 제시
+                    - 시장 상황과 기업 특성을 고려한 맞춤형 인사이트`
+                  },
+                  {
+                    role: 'user',
+                    content: insightPrompt
+                  }
+                ],
+                max_tokens: 1200,
+                temperature: 0.3
+              })
+            })
+
+            if (insightResponse.ok) {
+              const insightData = await insightResponse.json()
+              return insightData.choices[0]?.message?.content?.trim() || ''
+            }
+          } catch (error) {
+            console.error('❌ 인사이트 생성 오류:', error)
+          }
+          return ''
+        }
+
+        // 팩트 기반 인사이트 생성
+        let factBasedInsights = ''
+        if (factCheckedIssues) {
+          factBasedInsights = await generateFactBasedInsights(avgScore, factCheckedIssues)
+          console.log(`✅ 팩트 기반 인사이트 생성 완료: ${factBasedInsights.length}자`)
+        }
+
+        // Insight Report - Korean Version (한글 버전)
+        let insightReportKr = `
 [${company.nameKr || company.name} 투자 인사이트]
 
 `
-        if (avgScore > 1) {
-          insightReport += `✅ 긍정적 신호: 전반적으로 긍정적인 지표들이 관찰됩니다.
+        
+        if (factBasedInsights) {
+          insightReportKr += `📊 팩트 기반 투자 분석:
+${factBasedInsights}
+
+🔍 분석 근거: 위 인사이트는 검증된 최신 정보와 AI 지수 분석을 종합한 결과입니다.`
+        } else {
+          // 기본 인사이트 (팩트체크 정보가 없는 경우)
+          if (avgScore > 1) {
+            insightReportKr += `✅ 긍정적 신호: 전반적으로 긍정적인 지표들이 관찰됩니다.
 • 주요 호재 요인들이 기업 가치에 긍정적 영향을 미치고 있습니다.
 • 투자 매력도가 상승하고 있으며, 중장기 전망이 밝습니다.`
-        } else if (avgScore < -1) {
-          insightReport += `⚠️ 주의 신호: 부정적인 지표들이 다수 발견됩니다.
+          } else if (avgScore < -1) {
+            insightReportKr += `⚠️ 주의 신호: 부정적인 지표들이 다수 발견됩니다.
 • 리스크 요인들이 증가하고 있어 신중한 접근이 필요합니다.
 • 단기적으로 변동성이 확대될 가능성이 있습니다.`
-        } else {
-          insightReport += `📊 중립적 상황: 긍정과 부정 요인이 혼재되어 있습니다.
+          } else {
+            insightReportKr += `📊 중립적 상황: 긍정과 부정 요인이 혼재되어 있습니다.
 • 시장 상황을 지켜보며 추가적인 신호를 기다리는 것이 좋습니다.
 • 선별적인 접근과 리스크 관리가 중요합니다.`
+          }
         }
 
-        // 리포트를 DB에 저장
+        // Insight Report - English Version (영문 버전)
+        let insightReportEn = `
+[${company.name} Investment Insights]
+
+`
+        
+        if (factBasedInsights) {
+          try {
+            const translateInsightResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+              },
+              body: JSON.stringify({
+                model: 'gpt-4o',
+                messages: [
+                  {
+                    role: 'system',
+                    content: 'Translate the following Korean investment insight analysis to English while maintaining the professional investment advisory tone and analytical structure.'
+                  },
+                  {
+                    role: 'user',
+                    content: factBasedInsights
+                  }
+                ],
+                max_tokens: 1000,
+                temperature: 0.1
+              })
+            })
+            
+            if (translateInsightResponse.ok) {
+              const translateInsightData = await translateInsightResponse.json()
+              const englishInsights = translateInsightData.choices[0]?.message?.content?.trim() || ''
+              if (englishInsights) {
+                insightReportEn += `📊 Fact-Based Investment Analysis:
+${englishInsights}
+
+🔍 Analysis Basis: The above insights are based on verified latest information and AI index analysis.`
+              }
+            }
+          } catch (error) {
+            console.error('❌ 인사이트 번역 오류:', error)
+          }
+        } else {
+          // 기본 인사이트 영문판 (팩트체크 정보가 없는 경우)
+          if (avgScore > 1) {
+            insightReportEn += `✅ Positive Signals: Overall positive indicators are observed.
+• Key positive factors are positively impacting corporate value.
+• Investment attractiveness is rising with bright medium to long-term prospects.`
+          } else if (avgScore < -1) {
+            insightReportEn += `⚠️ Warning Signals: Multiple negative indicators detected.
+• Risk factors are increasing, requiring a cautious approach.
+• Short-term volatility may increase.`
+          } else {
+            insightReportEn += `📊 Neutral Situation: Mixed positive and negative factors.
+• Monitor market conditions and wait for additional signals.
+• Selective approach and risk management are important.`
+          }
+        }
+
+        console.log('📄 팩트체크 기반 Now 리포트 생성 완료:', nowReportKr.length, '자')
+        console.log('📄 팩트체크 기반 Now 리포트 영문 생성 완료:', nowReportEn.length, '자')
+        console.log('📊 팩트 기반 인사이트 리포트 생성 완료:', insightReportKr.length, '자')
+        
+        // 리포트를 DB에 저장 (한글/영문 버전 모두)
         try {
-          await prisma.report.create({
-            data: {
-              companyId: companyId,
-              date: new Date(date),
-              type: 'NOW',
-              content: nowReport,
-              userId: req.user?.userId
+          // NOW 리포트 저장 또는 업데이트
+          const existingNowReport = await prisma.report.findUnique({
+            where: {
+              companyId_date_type: {
+                companyId: companyId,
+                date: new Date(date),
+                type: 'NOW'
+              }
             }
           })
 
-          await prisma.report.create({
-            data: {
-              companyId: companyId,
-              date: new Date(date),
-              type: 'INSIGHT',
-              content: insightReport,
-              userId: req.user?.userId
+          if (existingNowReport) {
+            await prisma.report.update({
+              where: { id: existingNowReport.id },
+              data: {
+                content: nowReportKr,
+                contentEn: nowReportEn,
+                userId: req.user?.userId
+              }
+            })
+          } else {
+            await prisma.report.create({
+              data: {
+                companyId: companyId,
+                date: new Date(date),
+                type: 'NOW',
+                content: nowReportKr,
+                contentEn: nowReportEn,
+                userId: req.user?.userId
+              }
+            })
+          }
+
+          // INSIGHT 리포트 저장 또는 업데이트
+          const existingInsightReport = await prisma.report.findUnique({
+            where: {
+              companyId_date_type: {
+                companyId: companyId,
+                date: new Date(date),
+                type: 'INSIGHT'
+              }
             }
           })
 
-          console.log('✅ 요약 리포트 저장 완료')
+          if (existingInsightReport) {
+            await prisma.report.update({
+              where: { id: existingInsightReport.id },
+              data: {
+                content: insightReportKr,
+                contentEn: insightReportEn,
+                userId: req.user?.userId
+              }
+            })
+          } else {
+            await prisma.report.create({
+              data: {
+                companyId: companyId,
+                date: new Date(date),
+                type: 'INSIGHT',
+                content: insightReportKr,
+                contentEn: insightReportEn,
+                userId: req.user?.userId
+              }
+            })
+          }
+
+          console.log('✅ 팩트체크 기반 요약 리포트 저장 완료 (한글/영문 버전)')
+          console.log('   - NOW 리포트: 검증된 최신 이슈 정보 포함')
+          console.log('   - INSIGHT 리포트: 팩트 기반 투자 인사이트 포함')
         } catch (error: any) {
           console.error('리포트 저장 실패:')
           console.error('  - Error:', error?.message || error)

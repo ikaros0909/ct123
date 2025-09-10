@@ -28,7 +28,13 @@
       "Bash(npm run prisma:seed:*)",
       "Bash(del:*)",
       "Bash(npm run build:*)",
-      "Bash(if exist .next rmdir /s /q .next)"
+      "Bash(if exist .next rmdir /s /q .next)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(npx prisma:*)",
+      "Bash(sed:*)",
+      "Bash(npx tsc:*)",
+      "Bash(powershell:*)"
     ],
     "deny": [],
     "ask": []

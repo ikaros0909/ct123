@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import styles from './Admin.module.css'
 
 // 아이콘 컴포넌트
@@ -40,6 +40,28 @@ const Icons = {
     <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
       <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clipRule="evenodd"/>
     </svg>
+  ),
+  Key: () => (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+      <path fillRule="evenodd" d="M18 8a6 6 0 01-7.743 5.743L10 14l-1 1-1 1H6v2H2v-4l4.257-4.257A6 6 0 1118 8zm-6-4a1 1 0 100 2 2 2 0 012 2 1 1 0 102 0 4 4 0 00-4-4z" clipRule="evenodd"/>
+    </svg>
+  ),
+  KeyOff: () => (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+      <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l2 2a1 1 0 010 1.414l-2 2a1 1 0 01-1.414-1.414L11.586 8l-1.293-1.293a1 1 0 010-1.414z" clipRule="evenodd"/>
+      <path fillRule="evenodd" d="M4.293 15.707a1 1 0 010-1.414l10-10a1 1 0 011.414 0 1 1 0 010 1.414l-10 10a1 1 0 01-1.414 0z" clipRule="evenodd"/>
+      <path d="M18 8a6 6 0 01-7.743 5.743L10 14l-1 1-1 1H6v2H2v-4l4.257-4.257A6 6 0 1118 8zm-6-4a1 1 0 100 2 2 2 0 012 2 1 1 0 102 0 4 4 0 00-4-4z" opacity="0.3"/>
+    </svg>
+  ),
+  Close: () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M18 6L6 18M6 6l12 12"/>
+    </svg>
+  ),
+  Sparkles: () => (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+      <path d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zM3 12a1 1 0 011 1v1h1a1 1 0 110 2H4v1a1 1 0 11-2 0v-1H1a1 1 0 110-2h1v-1a1 1 0 011-1zM12 2a1 1 0 01.967.744L14 7l4.256 1.033a1 1 0 010 1.934L14 11l-1.033 4.256a1 1 0 01-1.934 0L10 11l-4.256-1.033a1 1 0 010-1.934L10 7l1.033-4.256A1 1 0 0112 2z"/>
+    </svg>
   )
 }
 
@@ -70,6 +92,7 @@ const Logo = () => (
 
 export default function UserManagement() {
   const router = useRouter()
+  const pathname = usePathname()
   const [users, setUsers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -83,6 +106,9 @@ export default function UserManagement() {
   })
   const [user, setUser] = useState<any>(null)
   const [showUserMenu, setShowUserMenu] = useState(false)
+  const [showGPTModal, setShowGPTModal] = useState(false)
+  const [gptApiKey, setGptApiKey] = useState('')
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
   useEffect(() => {
     // 사용자 정보 로드
@@ -217,12 +243,84 @@ export default function UserManagement() {
           <Logo />
           
           {/* 글로벌 네비게이션 */}
-          <nav className={styles.globalNav}>
-            <a href="/admin" className={styles.navLink}>
+          <nav style={{
+            display: 'flex',
+            gap: '0',
+            marginLeft: '48px',
+            borderBottom: '2px solid transparent',
+            position: 'relative'
+          }}>
+            <a 
+              href="/admin" 
+              onClick={(e) => {
+                e.preventDefault()
+                router.push('/admin')
+              }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '0 20px',
+                height: '40px',
+                textDecoration: 'none',
+                fontSize: '14px',
+                fontWeight: '600',
+                letterSpacing: '-0.2px',
+                transition: 'all 0.2s ease',
+                position: 'relative',
+                color: pathname === '/admin' ? '#000000' : '#86868b',
+                cursor: 'pointer',
+                borderBottom: pathname === '/admin' ? '2px solid #000000' : '2px solid transparent',
+                marginBottom: '-2px'
+              }}
+              onMouseEnter={(e) => {
+                if (pathname !== '/admin') {
+                  e.currentTarget.style.color = '#000000'
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (pathname !== '/admin') {
+                  e.currentTarget.style.color = '#86868b'
+                }
+              }}
+            >
               <Icons.Company />
               <span>기업 관리</span>
             </a>
-            <a href="/admin/users" className={`${styles.navLink} ${styles.active}`}>
+            <a 
+              href="/admin/users" 
+              onClick={(e) => {
+                e.preventDefault()
+                router.push('/admin/users')
+              }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '0 20px',
+                height: '40px',
+                textDecoration: 'none',
+                fontSize: '14px',
+                fontWeight: '600',
+                letterSpacing: '-0.2px',
+                transition: 'all 0.2s ease',
+                position: 'relative',
+                color: pathname === '/admin/users' ? '#000000' : '#86868b',
+                cursor: 'pointer',
+                borderBottom: pathname === '/admin/users' ? '2px solid #000000' : '2px solid transparent',
+                marginBottom: '-2px'
+              }}
+              onMouseEnter={(e) => {
+                if (pathname !== '/admin/users') {
+                  e.currentTarget.style.color = '#000000'
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (pathname !== '/admin/users') {
+                  e.currentTarget.style.color = '#86868b'
+                }
+              }}
+            >
               <Icons.Users />
               <span>사용자 관리</span>
             </a>
@@ -230,6 +328,67 @@ export default function UserManagement() {
         </div>
         
         <div className={styles.headerRight}>
+          <button 
+            onClick={() => setShowGPTModal(true)}
+            style={{ 
+              background: 'none', 
+              border: 'none', 
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '8px 16px',
+              borderRadius: '8px',
+              transition: 'background-color 0.2s',
+              marginRight: '16px'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f5f5f7'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+          >
+            <div style={{ 
+              position: 'relative',
+              display: 'inline-flex',
+              alignItems: 'center'
+            }}>
+              {gptApiKey ? (
+                <>
+                  <Icons.Key />
+                  <div style={{
+                    position: 'absolute',
+                    top: '-4px',
+                    right: '-4px',
+                    width: '8px',
+                    height: '8px',
+                    backgroundColor: '#10b981',
+                    borderRadius: '50%',
+                    border: '2px solid white'
+                  }} />
+                </>
+              ) : (
+                <>
+                  <Icons.KeyOff />
+                  <div style={{
+                    position: 'absolute',
+                    top: '-4px',
+                    right: '-4px',
+                    width: '8px',
+                    height: '8px',
+                    backgroundColor: '#ef4444',
+                    borderRadius: '50%',
+                    border: '2px solid white',
+                    animation: 'pulse 2s infinite'
+                  }} />
+                </>
+              )}
+            </div>
+            <span style={{
+              color: gptApiKey ? '#1d1d1f' : '#ef4444',
+              fontWeight: gptApiKey ? '500' : '600',
+              fontSize: '14px'
+            }}>
+              GPT {gptApiKey ? '설정됨' : '미설정'}
+            </span>
+          </button>
           {/* 사용자 메뉴 */}
           <div className={styles.userMenuWrapper}>
             <button 

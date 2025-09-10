@@ -101,7 +101,8 @@ model Report {
   company            Company   @relation(fields: [companyId], references: [id])
   date               DateTime  // 분석 날짜
   type               ReportType // NOW, INSIGHT
-  content            String    @db.Text // 리포트 내용
+  content            String    @db.Text // 리포트 내용 (한글)
+  contentEn          String?   @db.Text // 리포트 내용 (영문)
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
   userId             String?
@@ -115,4 +116,12 @@ model Report {
 enum ReportType {
   NOW
   INSIGHT
+}
+
+model SystemSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import ExcelUpload from '../components/ExcelUpload'
 import { FileSpreadsheet } from 'lucide-react'
 import styles from './Admin.module.css'
@@ -98,6 +98,23 @@ const Icons = {
       <path fillRule="evenodd" d="M12 13a1 1 0 100 2h5a1 1 0 001-1V9a1 1 0 10-2 0v2.586l-4.293-4.293a1 1 0 00-1.414 0L8 9.586 3.707 5.293a1 1 0 00-1.414 1.414l5 5a1 1 0 001.414 0L11 9.414 14.586 13H12z"/>
     </svg>
   ),
+  Sparkles: () => (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+      <path d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zM3 12a1 1 0 011 1v1h1a1 1 0 110 2H4v1a1 1 0 11-2 0v-1H1a1 1 0 110-2h1v-1a1 1 0 011-1zM12 2a1 1 0 01.967.744L14 7l4.256 1.033a1 1 0 010 1.934L14 11l-1.033 4.256a1 1 0 01-1.934 0L10 11l-4.256-1.033a1 1 0 010-1.934L10 7l1.033-4.256A1 1 0 0112 2z"/>
+    </svg>
+  ),
+  Key: () => (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+      <path fillRule="evenodd" d="M18 8a6 6 0 01-7.743 5.743L10 14l-1 1-1 1H6v2H2v-4l4.257-4.257A6 6 0 1118 8zm-6-4a1 1 0 100 2 2 2 0 012 2 1 1 0 102 0 4 4 0 00-4-4z" clipRule="evenodd"/>
+    </svg>
+  ),
+  KeyOff: () => (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+      <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l2 2a1 1 0 010 1.414l-2 2a1 1 0 01-1.414-1.414L11.586 8l-1.293-1.293a1 1 0 010-1.414z" clipRule="evenodd"/>
+      <path fillRule="evenodd" d="M4.293 15.707a1 1 0 010-1.414l10-10a1 1 0 011.414 0 1 1 0 010 1.414l-10 10a1 1 0 01-1.414 0z" clipRule="evenodd"/>
+      <path d="M18 8a6 6 0 01-7.743 5.743L10 14l-1 1-1 1H6v2H2v-4l4.257-4.257A6 6 0 1118 8zm-6-4a1 1 0 100 2 2 2 0 012 2 1 1 0 102 0 4 4 0 00-4-4z" opacity="0.3"/>
+    </svg>
+  ),
   Calendar: () => (
     <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
       <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd"/>
@@ -106,6 +123,11 @@ const Icons = {
   Add: () => (
     <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
       <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd"/>
+    </svg>
+  ),
+  Document: () => (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+      <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd"/>
     </svg>
   )
 }
@@ -158,8 +180,21 @@ interface Analysis {
   category: string
 }
 
+interface Report {
+  id: string
+  companyId: string
+  date: string
+  type: 'NOW' | 'INSIGHT'
+  content: string
+  contentEn?: string
+  userId?: string
+  createdAt: string
+  updatedAt: string
+}
+
 export default function AdminDashboard() {
   const router = useRouter()
+  const pathname = usePathname()
   const [companies, setCompanies] = useState<Company[]>([])
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null)
   const [showExcelUpload, setShowExcelUpload] = useState(false)
@@ -176,8 +211,11 @@ export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('')
   const [user, setUser] = useState<any>(null)
-  const [activeTab, setActiveTab] = useState<'items' | 'results'>('items')
-  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0])
+  const [activeTab, setActiveTab] = useState<'items' | 'results' | 'reports'>('items')
+  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0])  // 날짜별 필터용
+  const [analysisDate, setAnalysisDate] = useState<string>(new Date().toISOString().split('T')[0])  // AI 분석 날짜용
+  const [reports, setReports] = useState<Report[]>([])
+  const [selectedReportType, setSelectedReportType] = useState<'NOW' | 'INSIGHT' | 'ALL'>('ALL')
   const [draggedCompany, setDraggedCompany] = useState<Company | null>(null)
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
   const [showSystemPromptEdit, setShowSystemPromptEdit] = useState(false)
@@ -192,6 +230,10 @@ export default function AdminDashboard() {
     confirmPassword: ''
   })
   const [showAnalysisConfirmModal, setShowAnalysisConfirmModal] = useState(false)
+  const [showGPTModal, setShowGPTModal] = useState(false)
+  const [gptApiKey, setGptApiKey] = useState('')
+  const [showDeleteCategoryModal, setShowDeleteCategoryModal] = useState(false)
+  const [categoryToDelete, setCategoryToDelete] = useState<string>('')
   const [analysisProgress, setAnalysisProgress] = useState(0)
   const [analysisStatus, setAnalysisStatus] = useState<Record<string, {status: string, item?: string}>>({})
   const [isAnalyzing, setIsAnalyzing] = useState(false)
@@ -263,11 +305,57 @@ export default function AdminDashboard() {
       }
       setIsAuthenticated(true)
       loadData()
+      loadGPTSettings()
     })
     .catch(() => {
       router.push('/login')
     })
   }, [router])
+
+  // GPT 설정 로드
+  const loadGPTSettings = async () => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch('/api/admin/gpt-settings', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      if (response.ok) {
+        const data = await response.json()
+        if (data.apiKey) {
+          setGptApiKey(data.apiKey)
+        }
+      }
+    } catch (err) {
+      console.error('GPT 설정 로드 실패:', err)
+    }
+  }
+
+  // GPT 설정 저장
+  const saveGPTSettings = async () => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch('/api/admin/gpt-settings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ apiKey: gptApiKey })
+      })
+      
+      if (response.ok) {
+        setSuccessMessage('GPT API 키가 저장되었습니다.')
+        setShowGPTModal(false)
+      } else {
+        const errorData = await response.json()
+        console.error('GPT 설정 저장 실패:', errorData)
+        setError(errorData.error || '저장에 실패했습니다.')
+      }
+    } catch (err) {
+      console.error('GPT 설정 저장 실패:', err)
+      setError('저장 중 오류가 발생했습니다.')
+    }
+  }
 
   // 데이터 로드
   const loadData = async () => {
@@ -340,11 +428,99 @@ export default function AdminDashboard() {
         const analysisList = await analysisRes.json()
         setAnalysisData(analysisList)
       }
+
+      // Reports 로드
+      const reportsRes = await fetch(`/api/reports?companyId=${companyId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      if (reportsRes.ok) {
+        const reportsList = await reportsRes.json()
+        setReports(reportsList)
+      }
     } catch (err) {
       console.error('Error loading company data:', err)
       setError('데이터를 불러오는데 실패했습니다')
     } finally {
       setLoading(false)
+    }
+  }
+
+  // 리포트 데이터 로드
+  const loadReports = async (companyId: string, date?: string) => {
+    try {
+      const token = localStorage.getItem('token')
+      let url = `/api/reports?companyId=${companyId}`
+      if (date) {
+        url += `&date=${date}`
+      }
+      
+      const response = await fetch(url, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      
+      if (response.ok) {
+        const reportList = await response.json()
+        setReports(reportList)
+      }
+    } catch (err) {
+      console.error('Error loading reports:', err)
+      setError('리포트를 불러오는데 실패했습니다')
+    }
+  }
+
+  // 리포트 수정
+  const updateReport = async (reportId: string, updatedData: Partial<Report>) => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch(`/api/admin/reports/${reportId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(updatedData)
+      })
+      
+      if (response.ok) {
+        setSuccessMessage('리포트가 업데이트되었습니다')
+        setTimeout(() => setSuccessMessage(null), 3000)
+        // 리포트 목록 새로고침
+        if (selectedCompany) {
+          loadReports(selectedCompany.id, selectedDate)
+        }
+      } else {
+        setError('리포트 업데이트에 실패했습니다')
+      }
+    } catch (err) {
+      console.error('Error updating report:', err)
+      setError('리포트 업데이트 중 오류가 발생했습니다')
+    }
+  }
+
+  // 리포트 삭제
+  const deleteReport = async (reportId: string) => {
+    if (!confirm('정말로 이 리포트를 삭제하시겠습니까?')) return
+    
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch(`/api/admin/reports/${reportId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      
+      if (response.ok) {
+        setSuccessMessage('리포트가 삭제되었습니다')
+        setTimeout(() => setSuccessMessage(null), 3000)
+        // 리포트 목록 새로고침
+        if (selectedCompany) {
+          loadReports(selectedCompany.id, selectedDate)
+        }
+      } else {
+        setError('리포트 삭제에 실패했습니다')
+      }
+    } catch (err) {
+      console.error('Error deleting report:', err)
+      setError('리포트 삭제 중 오류가 발생했습니다')
     }
   }
 
@@ -479,7 +655,7 @@ export default function AdminDashboard() {
         if (selectedMainData) {
           setAnalysisForm({
             companyId: selectedCompany?.id || '',
-            date: selectedDate,
+            date: analysisDate,
             sequenceNumber: selectedMainData.sequenceNumber,
             item: selectedMainData.item,
             scale: 0,
@@ -686,18 +862,151 @@ export default function AdminDashboard() {
           <Logo />
           
           {/* 글로벌 네비게이션 */}
-          <nav className={styles.globalNav}>
-            <a href="/admin" className={`${styles.navLink} ${styles.active}`}>
+          <nav style={{
+            display: 'flex',
+            gap: '0',
+            marginLeft: '48px',
+            borderBottom: '2px solid transparent',
+            position: 'relative'
+          }}>
+            <a 
+              href="/admin" 
+              onClick={(e) => {
+                e.preventDefault()
+                router.push('/admin')
+              }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '0 20px',
+                height: '40px',
+                textDecoration: 'none',
+                fontSize: '14px',
+                fontWeight: '600',
+                letterSpacing: '-0.2px',
+                transition: 'all 0.2s ease',
+                position: 'relative',
+                color: pathname === '/admin' ? '#000000' : '#86868b',
+                cursor: 'pointer',
+                borderBottom: pathname === '/admin' ? '2px solid #000000' : '2px solid transparent',
+                marginBottom: '-2px'
+              }}
+              onMouseEnter={(e) => {
+                if (pathname !== '/admin') {
+                  e.currentTarget.style.color = '#000000'
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (pathname !== '/admin') {
+                  e.currentTarget.style.color = '#86868b'
+                }
+              }}
+            >
               <Icons.Company />
               <span>기업 관리</span>
             </a>
-            <a href="/admin/users" className={styles.navLink}>
+            <a 
+              href="/admin/users" 
+              onClick={(e) => {
+                e.preventDefault()
+                router.push('/admin/users')
+              }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '0 20px',
+                height: '40px',
+                textDecoration: 'none',
+                fontSize: '14px',
+                fontWeight: '600',
+                letterSpacing: '-0.2px',
+                transition: 'all 0.2s ease',
+                position: 'relative',
+                color: pathname === '/admin/users' ? '#000000' : '#86868b',
+                cursor: 'pointer',
+                borderBottom: pathname === '/admin/users' ? '2px solid #000000' : '2px solid transparent',
+                marginBottom: '-2px'
+              }}
+              onMouseEnter={(e) => {
+                if (pathname !== '/admin/users') {
+                  e.currentTarget.style.color = '#000000'
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (pathname !== '/admin/users') {
+                  e.currentTarget.style.color = '#86868b'
+                }
+              }}
+            >
               <Icons.Users />
               <span>사용자 관리</span>
             </a>
           </nav>
         </div>
         <div className={styles.headerRight}>
+          <button 
+            onClick={() => setShowGPTModal(true)}
+            style={{ 
+              background: 'none', 
+              border: 'none', 
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '8px 16px',
+              borderRadius: '8px',
+              transition: 'background-color 0.2s',
+              marginRight: '16px'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f5f5f7'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+          >
+            <div style={{ 
+              position: 'relative',
+              display: 'inline-flex',
+              alignItems: 'center'
+            }}>
+              {gptApiKey ? (
+                <>
+                  <Icons.Key />
+                  <div style={{
+                    position: 'absolute',
+                    top: '-4px',
+                    right: '-4px',
+                    width: '8px',
+                    height: '8px',
+                    backgroundColor: '#10b981',
+                    borderRadius: '50%',
+                    border: '2px solid white'
+                  }} />
+                </>
+              ) : (
+                <>
+                  <Icons.KeyOff />
+                  <div style={{
+                    position: 'absolute',
+                    top: '-4px',
+                    right: '-4px',
+                    width: '8px',
+                    height: '8px',
+                    backgroundColor: '#ef4444',
+                    borderRadius: '50%',
+                    border: '2px solid white',
+                    animation: 'pulse 2s infinite'
+                  }} />
+                </>
+              )}
+            </div>
+            <span style={{
+              color: gptApiKey ? '#1d1d1f' : '#ef4444',
+              fontWeight: gptApiKey ? '500' : '600',
+              fontSize: '14px'
+            }}>
+              GPT {gptApiKey ? '설정됨' : '미설정'}
+            </span>
+          </button>
           <div className={styles.userMenuWrapper}>
             <button 
               className={styles.userMenuBtn}
@@ -926,6 +1235,13 @@ export default function AdminDashboard() {
                   <Icons.TrendUp />
                   <span>분석결과 관리</span>
                 </button>
+                <button 
+                  className={`${styles.tabButton} ${activeTab === 'reports' ? styles.active : ''}`}
+                  onClick={() => setActiveTab('reports')}
+                >
+                  <Icons.Document />
+                  <span>리포트 관리</span>
+                </button>
               </div>
             </div>
 
@@ -1117,50 +1433,34 @@ export default function AdminDashboard() {
                           <h2 style={{ margin: 0 }}>{category}</h2>
                           <button
                             className={styles.deleteBtn}
-                            onClick={async () => {
-                              if (confirm(`정말로 "${category}" 카테고리의 모든 항목을 삭제하시겠습니까?\n총 ${categoryData.length}개 항목이 삭제됩니다.`)) {
-                                setLoading(true)
-                                try {
-                                  const token = localStorage.getItem('token')
-                                  const res = await fetch(`/api/admin/main-data/delete-category?companyId=${selectedCompany?.id}&category=${encodeURIComponent(category)}`, {
-                                    method: 'DELETE',
-                                    headers: {
-                                      'Authorization': `Bearer ${token}`
-                                    }
-                                  })
-                                  
-                                  if (res.ok) {
-                                    const result = await res.json()
-                                    setSuccessMessage(result.message)
-                                    if (selectedCompany) {
-                                      loadCompanyData(selectedCompany.id)
-                                    }
-                                  } else {
-                                    const error = await res.json()
-                                    setError(error.error || '삭제 실패')
-                                  }
-                                } catch (err) {
-                                  setError('카테고리 삭제 중 오류가 발생했습니다.')
-                                } finally {
-                                  setLoading(false)
-                                }
-                              }
+                            onClick={() => {
+                              setCategoryToDelete(category)
+                              setShowDeleteCategoryModal(true)
                             }}
                             style={{ 
-                              backgroundColor: '#ef4444',
+                              backgroundColor: '#6b7280',
                               color: 'white',
                               padding: '0.5rem 1rem',
                               borderRadius: '0.375rem',
-                              border: 'none',
+                              border: '1px solid #9ca3af',
                               cursor: 'pointer',
                               fontSize: '0.875rem',
-                              fontWeight: '500',
+                              fontWeight: '400',
                               display: 'flex',
                               alignItems: 'center',
-                              gap: '0.5rem'
+                              gap: '0.5rem',
+                              opacity: 0.8
                             }}
-                            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#dc2626'}
-                            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#ef4444'}
+                            onMouseOver={(e) => {
+                              e.currentTarget.style.backgroundColor = '#ef4444'
+                              e.currentTarget.style.opacity = '1'
+                              e.currentTarget.style.borderColor = '#ef4444'
+                            }}
+                            onMouseOut={(e) => {
+                              e.currentTarget.style.backgroundColor = '#6b7280'
+                              e.currentTarget.style.opacity = '0.8'
+                              e.currentTarget.style.borderColor = '#9ca3af'
+                            }}
                           >
                             <Icons.Delete />
                             카테고리 전체 삭제 ({categoryData.length}개)
@@ -1208,7 +1508,7 @@ export default function AdminDashboard() {
                   })
                 )}
               </>
-            ) : (
+            ) : activeTab === 'results' ? (
               // 분석결과 탭
               <>
                 {/* AI 분석 실행 툴바 */}
@@ -1218,8 +1518,8 @@ export default function AdminDashboard() {
                       <Icons.Calendar />
                       <input
                         type="date"
-                        value={selectedDate}
-                        onChange={(e) => setSelectedDate(e.target.value)}
+                        value={analysisDate}
+                        onChange={(e) => setAnalysisDate(e.target.value)}
                       />
                     </div>
                     <span style={{ marginLeft: '1rem', color: '#666', fontSize: '0.875rem' }}>
@@ -1229,7 +1529,7 @@ export default function AdminDashboard() {
                   <button 
                     className={styles.analyzeBtn}
                     onClick={() => {
-                      if (!selectedDate) {
+                      if (!analysisDate) {
                         setError('분석할 날짜를 선택해주세요');
                         return;
                       }
@@ -1240,20 +1540,20 @@ export default function AdminDashboard() {
                       setAnalysisStatus({});
                       setShowAnalysisConfirmModal(true);
                     }}
-                    disabled={isAnalyzing || !selectedDate}
+                    disabled={isAnalyzing || !analysisDate}
                     style={{ 
                       backgroundColor: '#3b82f6',
                       color: 'white',
                       padding: '0.75rem 1.5rem',
                       borderRadius: '0.5rem',
                       border: 'none',
-                      cursor: isAnalyzing || !selectedDate ? 'not-allowed' : 'pointer',
+                      cursor: isAnalyzing || !analysisDate ? 'not-allowed' : 'pointer',
                       fontSize: '1rem',
                       fontWeight: '500',
                       display: 'flex',
                       alignItems: 'center',
                       gap: '0.5rem',
-                      opacity: isAnalyzing || !selectedDate ? 0.5 : 1
+                      opacity: isAnalyzing || !analysisDate ? 0.5 : 1
                     }}
                   >
                     <Icons.TrendUp />
@@ -1391,7 +1691,12 @@ export default function AdminDashboard() {
                   </div>
                 </div>
               </>
-            )}
+            ) : activeTab === 'reports' ? (
+              <div style={{ padding: '20px' }}>
+                <h3>리포트 관리</h3>
+                <p>리포트 관리 기능이 곧 추가될 예정입니다.</p>
+              </div>
+            ) : null}
           </div>
         )}
       </main>
@@ -1847,6 +2152,138 @@ export default function AdminDashboard() {
         />
       )}
 
+      {/* 카테고리 삭제 확인 모달 */}
+      {showDeleteCategoryModal && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modal} style={{ maxWidth: '500px' }}>
+            <div className={styles.modalHeader}>
+              <h2 style={{ color: '#dc2626', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                  <line x1="12" y1="9" x2="12" y2="13" />
+                  <line x1="12" y1="17" x2="12.01" y2="17" />
+                </svg>
+                카테고리 삭제 확인
+              </h2>
+              <button 
+                className={styles.modalClose}
+                onClick={() => setShowDeleteCategoryModal(false)}
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className={styles.modalBody}>
+              <div style={{ 
+                backgroundColor: '#fef2f2', 
+                border: '1px solid #fecaca',
+                borderRadius: '0.5rem',
+                padding: '1rem',
+                marginBottom: '1.5rem'
+              }}>
+                <p style={{ marginBottom: '0.5rem', fontWeight: '600', color: '#991b1b' }}>
+                  정말로 "{categoryToDelete}" 카테고리를 삭제하시겠습니까?
+                </p>
+                <p style={{ color: '#7f1d1d', fontSize: '0.875rem', marginBottom: '0.5rem' }}>
+                  • 카테고리에 속한 <strong>{mainData.filter(item => item.category === categoryToDelete).length}개</strong>의 항목이 모두 삭제됩니다.
+                </p>
+                <p style={{ color: '#7f1d1d', fontSize: '0.875rem', marginBottom: '0.5rem' }}>
+                  • 해당 카테고리의 모든 분석 결과도 함께 삭제됩니다.
+                </p>
+                <p style={{ color: '#dc2626', fontSize: '0.875rem', fontWeight: '600' }}>
+                  ⚠️ 이 작업은 되돌릴 수 없습니다!
+                </p>
+              </div>
+              
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+                  삭제를 확인하려면 카테고리 이름을 입력하세요:
+                </label>
+                <input
+                  type="text"
+                  placeholder={categoryToDelete}
+                  style={{
+                    width: '100%',
+                    padding: '0.5rem',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '0.375rem',
+                    fontSize: '0.875rem'
+                  }}
+                  onInput={(e) => {
+                    const input = e.currentTarget
+                    if (input.value === categoryToDelete) {
+                      input.style.borderColor = '#10b981'
+                      input.style.backgroundColor = '#f0fdf4'
+                    } else {
+                      input.style.borderColor = '#d1d5db'
+                      input.style.backgroundColor = 'white'
+                    }
+                  }}
+                  id="delete-category-confirm-input"
+                />
+              </div>
+            </div>
+            
+            <div className={styles.modalFooter}>
+              <button 
+                className={styles.cancelBtn}
+                onClick={() => setShowDeleteCategoryModal(false)}
+              >
+                취소
+              </button>
+              <button 
+                onClick={async () => {
+                  const input = document.getElementById('delete-category-confirm-input') as HTMLInputElement
+                  if (input?.value !== categoryToDelete) {
+                    setError('카테고리 이름이 일치하지 않습니다.')
+                    return
+                  }
+                  
+                  setLoading(true)
+                  try {
+                    const token = localStorage.getItem('token')
+                    const res = await fetch(`/api/admin/main-data/delete-category?companyId=${selectedCompany?.id}&category=${encodeURIComponent(categoryToDelete)}`, {
+                      method: 'DELETE',
+                      headers: {
+                        'Authorization': `Bearer ${token}`
+                      }
+                    })
+                    
+                    if (res.ok) {
+                      const result = await res.json()
+                      setSuccessMessage(result.message)
+                      if (selectedCompany) {
+                        loadCompanyData(selectedCompany.id)
+                      }
+                      setShowDeleteCategoryModal(false)
+                    } else {
+                      const error = await res.json()
+                      setError(error.error || '삭제 실패')
+                    }
+                  } catch (err) {
+                    setError('카테고리 삭제 중 오류가 발생했습니다.')
+                  } finally {
+                    setLoading(false)
+                  }
+                }}
+                style={{
+                  backgroundColor: '#dc2626',
+                  color: 'white',
+                  padding: '0.5rem 1.5rem',
+                  borderRadius: '0.375rem',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '0.875rem',
+                  fontWeight: '500'
+                }}
+              >
+                삭제
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* AI 분석 확인 모달 */}
       {showAnalysisConfirmModal && (
         <div className={styles.modalOverlay}>
@@ -1906,7 +2343,7 @@ export default function AdminDashboard() {
                           AI 분석을 실행하시겠습니까?
                         </h3>
                         <p style={{ margin: '0 0 0.5rem 0', color: '#78350f', fontSize: '0.875rem' }}>
-                          선택한 날짜: <strong>{selectedDate}</strong>
+                          선택한 날짜: <strong>{analysisDate}</strong>
                         </p>
                         <p style={{ margin: 0, color: '#78350f', fontSize: '0.875rem' }}>
                           {mainData.length}개의 분석 항목에 대해 AI 분석이 실행됩니다.
@@ -2192,7 +2629,7 @@ export default function AdminDashboard() {
                       
                       addLog('AI 분석 시작...');
                       addLog(`분석 대상: ${selectedCompany?.nameKr || selectedCompany?.name}`);
-                      addLog(`분석 날짜: ${selectedDate}`);
+                      addLog(`분석 날짜: ${analysisDate}`);
                       addLog(`총 ${mainData.length}개 항목 분석 예정`);
                       
                       // 진행률 시뮬레이션
@@ -2228,7 +2665,7 @@ export default function AdminDashboard() {
                         },
                         body: JSON.stringify({
                           companyId: selectedCompany?.id,
-                          date: selectedDate,
+                          date: analysisDate,
                           selectionMode: 'all',
                           items: items
                         })
@@ -2283,6 +2720,186 @@ export default function AdminDashboard() {
                 )}
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* GPT 설정 모달 */}
+      {showGPTModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.6)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '16px',
+            padding: '32px',
+            width: '90%',
+            maxWidth: '500px',
+            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
+            animation: 'fadeIn 0.3s ease-out'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '24px'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px'
+              }}>
+                <div style={{
+                  width: '48px',
+                  height: '48px',
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  borderRadius: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <Icons.Sparkles />
+                </div>
+                <div>
+                  <h2 style={{
+                    fontSize: '24px',
+                    fontWeight: '600',
+                    color: '#111827',
+                    margin: 0
+                  }}>GPT API 설정</h2>
+                  <p style={{
+                    fontSize: '14px',
+                    color: '#6b7280',
+                    margin: '4px 0 0 0'
+                  }}>OpenAI API 키를 설정하세요</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowGPTModal(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '8px',
+                  borderRadius: '8px',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              >
+                <Icons.Close />
+              </button>
+            </div>
+            
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{
+                display: 'block',
+                fontSize: '14px',
+                fontWeight: '500',
+                color: '#374151',
+                marginBottom: '8px'
+              }}>
+                API Key
+              </label>
+              <input
+                type="password"
+                value={gptApiKey}
+                onChange={(e) => setGptApiKey(e.target.value)}
+                placeholder="sk-..."
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  border: '2px solid #e5e7eb',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  transition: 'border-color 0.2s',
+                  outline: 'none'
+                }}
+                onFocus={(e) => e.currentTarget.style.borderColor = '#6366f1'}
+                onBlur={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
+              />
+              <p style={{
+                fontSize: '12px',
+                color: '#6b7280',
+                marginTop: '8px'
+              }}>
+                OpenAI 대시보드에서 API 키를 생성하고 입력하세요.
+                <a href="https://platform.openai.com/api-keys" 
+                   target="_blank" 
+                   rel="noopener noreferrer"
+                   style={{
+                     color: '#6366f1',
+                     marginLeft: '4px',
+                     textDecoration: 'none'
+                   }}>
+                  키 생성하기 →
+                </a>
+              </p>
+            </div>
+            
+            <div style={{
+              display: 'flex',
+              gap: '12px',
+              justifyContent: 'flex-end'
+            }}>
+              <button
+                onClick={() => setShowGPTModal(false)}
+                style={{
+                  padding: '10px 20px',
+                  border: '2px solid #e5e7eb',
+                  borderRadius: '8px',
+                  backgroundColor: 'white',
+                  color: '#374151',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#f9fafb'
+                  e.currentTarget.style.borderColor = '#d1d5db'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'white'
+                  e.currentTarget.style.borderColor = '#e5e7eb'
+                }}
+              >
+                취소
+              </button>
+              <button
+                onClick={saveGPTSettings}
+                style={{
+                  padding: '10px 20px',
+                  border: 'none',
+                  borderRadius: '8px',
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  color: 'white',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'transform 0.2s, box-shadow 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-1px)'
+                  e.currentTarget.style.boxShadow = '0 10px 20px rgba(102, 126, 234, 0.4)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)'
+                  e.currentTarget.style.boxShadow = 'none'
+                }}
+              >
+                저장
+              </button>
+            </div>
           </div>
         </div>
       )}
