@@ -195,18 +195,6 @@ interface Report {
 export default function AdminDashboard() {
   const router = useRouter()
   const pathname = usePathname()
-  
-  // 한국 시간 기준 오늘 날짜를 상수로 계산
-  const getKoreanDate = () => {
-    const now = new Date()
-    const kstOffset = now.getTimezoneOffset() * 60000 + (9 * 60 * 60 * 1000)
-    const kstDate = new Date(now.getTime() + kstOffset)
-    return kstDate.getFullYear() + '-' + 
-           String(kstDate.getMonth() + 1).padStart(2, '0') + '-' + 
-           String(kstDate.getDate()).padStart(2, '0')
-  }
-  const TODAY_KST = getKoreanDate()
-  
   const [companies, setCompanies] = useState<Company[]>([])
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null)
   const [showExcelUpload, setShowExcelUpload] = useState(false)
@@ -224,14 +212,12 @@ export default function AdminDashboard() {
   const [selectedCategory, setSelectedCategory] = useState<string>('')
   const [user, setUser] = useState<any>(null)
   const [activeTab, setActiveTab] = useState<'items' | 'results'>('items')
-  const [selectedDate, setSelectedDate] = useState<string>(TODAY_KST)
-  const [analysisDate, setAnalysisDate] = useState<string>(TODAY_KST)
+  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0])  // 날짜별 필터용
+  const [analysisDate, setAnalysisDate] = useState<string>(new Date().toISOString().split('T')[0])  // AI 분석 날짜용
   const [reports, setReports] = useState<Report[]>([])
   const [selectedReportType, setSelectedReportType] = useState<'NOW' | 'INSIGHT' | 'ALL'>('ALL')
   const [draggedCompany, setDraggedCompany] = useState<Company | null>(null)
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
-  const [showDeleteReportModal, setShowDeleteReportModal] = useState(false)
-  const [reportToDelete, setReportToDelete] = useState<any>(null)
   const [showSystemPromptEdit, setShowSystemPromptEdit] = useState(false)
   const [systemPromptForm, setSystemPromptForm] = useState('')
   const [showUserMenu, setShowUserMenu] = useState(false)
@@ -325,41 +311,6 @@ export default function AdminDashboard() {
       router.push('/login')
     })
   }, [router])
-
-  // 디버깅: analysisDate 변경 추적
-  useEffect(() => {
-    console.log('analysisDate changed to:', analysisDate)
-  }, [analysisDate])
-  
-  // 선택된 회사 또는 날짜가 변경될 때 리포트 로드
-  useEffect(() => {
-    if (selectedCompany && analysisDate) {
-      loadReports(selectedCompany.id, analysisDate)
-    }
-  }, [selectedCompany, analysisDate])
-
-  // 최신 분석 날짜 가져오기
-  const getLatestAnalysisDate = async (companyId: string) => {
-    try {
-      const token = localStorage.getItem('token')
-      const response = await fetch(`/api/analysis-data?companyId=${companyId}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-      
-      if (response.ok) {
-        const data = await response.json()
-        if (data.length > 0) {
-          // 날짜별로 정렬하여 가장 최근 날짜 반환
-          const sortedData = data.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())
-          const latestDate = sortedData[0].date
-          return latestDate
-        }
-      }
-    } catch (error) {
-      console.error('최신 분석 날짜 조회 실패:', error)
-    }
-    return null // 분석 데이터가 없으면 null 반환
-  }
 
   // GPT 설정 로드
   const loadGPTSettings = async () => {
@@ -550,31 +501,6 @@ export default function AdminDashboard() {
   const deleteReport = async (reportId: string) => {
     if (!confirm('정말로 이 리포트를 삭제하시겠습니까?')) return
     
-    try {
-      const token = localStorage.getItem('token')
-      const response = await fetch(`/api/admin/reports/${reportId}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-      
-      if (response.ok) {
-        setSuccessMessage('리포트가 삭제되었습니다')
-        setTimeout(() => setSuccessMessage(null), 3000)
-        // 리포트 목록 새로고침
-        if (selectedCompany) {
-          loadReports(selectedCompany.id, selectedDate)
-        }
-      } else {
-        setError('리포트 삭제에 실패했습니다')
-      }
-    } catch (err) {
-      console.error('Error deleting report:', err)
-      setError('리포트 삭제 중 오류가 발생했습니다')
-    }
-  }
-
-  // 리포트 삭제 (확인 없이)
-  const deleteReportWithoutConfirm = async (reportId: string) => {
     try {
       const token = localStorage.getItem('token')
       const response = await fetch(`/api/admin/reports/${reportId}`, {
@@ -1304,22 +1230,7 @@ export default function AdminDashboard() {
                 </button>
                 <button 
                   className={`${styles.tabButton} ${activeTab === 'results' ? styles.active : ''}`}
-                  onClick={async () => {
-                    setActiveTab('results')
-                    // 분석결과 탭 클릭 시 최신 분석 날짜로 필터 설정
-                    if (selectedCompany) {
-                      const latestDate = await getLatestAnalysisDate(selectedCompany.id)
-                      if (latestDate) {
-                        setSelectedDate(latestDate)
-                        setAnalysisDate(latestDate)
-                      } else {
-                        // 분석 데이터가 없으면 오늘 날짜 유지
-                        // selectedDate는 비우지만 analysisDate는 오늘 날짜 유지
-                        setSelectedDate('')
-                        // analysisDate는 변경하지 않음 (초기값 유지)
-                      }
-                    }
-                  }}
+                  onClick={() => setActiveTab('results')}
                 >
                   <Icons.TrendUp />
                   <span>분석결과 관리</span>
@@ -1600,7 +1511,7 @@ export default function AdminDashboard() {
                       <Icons.Calendar />
                       <input
                         type="date"
-                        value={analysisDate || TODAY_KST}
+                        value={analysisDate}
                         onChange={(e) => setAnalysisDate(e.target.value)}
                       />
                     </div>
@@ -1804,125 +1715,143 @@ export default function AdminDashboard() {
 
                   {/* 리포트 목록 */}
                   <div style={{ marginTop: '20px' }}>
-                    {reports && reports.length > 0 ? (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                        {reports
-                          .filter(report => selectedReportType === 'ALL' || report.type === selectedReportType)
-                          .sort((a, b) => {
-                            // INSIGHT 리포트를 NOW보다 먼저 표시
-                            if (a.type === 'INSIGHT' && b.type === 'NOW') return -1
-                            if (a.type === 'NOW' && b.type === 'INSIGHT') return 1
-                            // 같은 타입이면 날짜순 정렬
-                            return new Date(b.date).getTime() - new Date(a.date).getTime()
-                          })
-                          .map(report => (
-                          <div key={report.id} style={{
-                            border: '1px solid #e5e7eb',
-                            borderRadius: '8px',
-                            padding: '16px',
-                            backgroundColor: '#f9fafb'
-                          }}>
-                            <div style={{
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              alignItems: 'center',
-                              marginBottom: '12px'
-                            }}>
-                              <div style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '8px'
-                              }}>
-                                <span style={{
-                                  backgroundColor: report.type === 'NOW' ? '#dbeafe' : '#fef3c7',
-                                  color: report.type === 'NOW' ? '#1e40af' : '#92400e',
-                                  padding: '4px 8px',
-                                  borderRadius: '4px',
-                                  fontSize: '12px',
-                                  fontWeight: '500'
-                                }}>
-                                  {report.type}
-                                </span>
-                                <span style={{ fontSize: '14px', color: '#6b7280' }}>
-                                  {new Date(report.date).toLocaleDateString('ko-KR')}
-                                </span>
-                              </div>
-                              <div style={{ display: 'flex', gap: '8px' }}>
-                                <button
-                                  onClick={() => {
-                                    const textarea = document.createElement('textarea')
-                                    textarea.value = report.content
-                                    document.body.appendChild(textarea)
-                                    textarea.select()
-                                    document.execCommand('copy')
-                                    document.body.removeChild(textarea)
-                                    setSuccessMessage('리포트가 클립보드에 복사되었습니다.')
-                                    setTimeout(() => setSuccessMessage(null), 2000)
-                                  }}
-                                  style={{
-                                    padding: '4px 8px',
-                                    fontSize: '12px',
-                                    backgroundColor: '#f3f4f6',
-                                    border: '1px solid #d1d5db',
-                                    borderRadius: '4px',
-                                    cursor: 'pointer'
-                                  }}
-                                >
-                                  복사
-                                </button>
-                                <button
-                                  onClick={() => {
-                                    setReportToDelete(report)
-                                    setShowDeleteReportModal(true)
-                                  }}
-                                  style={{
-                                    padding: '4px 8px',
-                                    fontSize: '12px',
-                                    backgroundColor: '#fee2e2',
-                                    color: '#dc2626',
-                                    border: '1px solid #fecaca',
-                                    borderRadius: '4px',
-                                    cursor: 'pointer'
-                                  }}
-                                >
-                                  삭제
-                                </button>
-                              </div>
-                            </div>
-                            <div style={{
-                              backgroundColor: 'white',
-                              padding: '12px',
-                              borderRadius: '4px',
-                              border: '1px solid #e5e7eb',
-                              maxHeight: '300px',
-                              overflowY: 'auto',
-                              fontSize: '14px',
-                              lineHeight: '1.5',
-                              whiteSpace: 'pre-wrap'
-                            }}>
-                              {report.content || '리포트 내용이 없습니다.'}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
+                    {reports.length === 0 ? (
                       <div style={{
                         textAlign: 'center',
                         padding: '40px 20px',
                         color: '#6b7280',
-                        fontSize: '14px'
+                        fontSize: '14px',
+                        backgroundColor: '#f9fafb',
+                        borderRadius: '8px',
+                        border: '1px solid #e5e7eb'
                       }}>
                         <Icons.Document />
-                        <p style={{ margin: '8px 0 0 0' }}>
-                          {selectedCompany 
-                            ? '해당 날짜에 생성된 AI 분석 리포트가 없습니다.'
-                            : '회사를 선택하면 AI 분석 리포트를 확인할 수 있습니다.'
-                          }
-                        </p>
-                        {selectedCompany && (
-                          <p style={{ margin: '4px 0 0 0', fontSize: '12px' }}>
-                            AI 분석을 실행하여 리포트를 생성해보세요.
-                          </p>
+                        <p style={{ margin: '10px 0 0 0' }}>생성된 AI 분석 리포트가 없습니다.</p>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        {reports
+                          .filter(report => selectedReportType === 'ALL' || report.type === selectedReportType)
+                          .map((report) => (
+                            <div key={report.id} style={{
+                              border: '1px solid #e5e7eb',
+                              borderRadius: '8px',
+                              padding: '16px',
+                              backgroundColor: 'white',
+                              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+                            }}>
+                              <div style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'flex-start',
+                                marginBottom: '12px'
+                              }}>
+                                <div>
+                                  <div style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    marginBottom: '4px'
+                                  }}>
+                                    <span style={{
+                                      backgroundColor: report.type === 'NOW' ? '#3b82f6' : '#10b981',
+                                      color: 'white',
+                                      padding: '4px 8px',
+                                      borderRadius: '12px',
+                                      fontSize: '12px',
+                                      fontWeight: '600'
+                                    }}>
+                                      {report.type}
+                                    </span>
+                                    <span style={{
+                                      fontSize: '14px',
+                                      color: '#6b7280',
+                                      fontWeight: '500'
+                                    }}>
+                                      {new Date(report.date).toLocaleDateString('ko-KR')}
+                                    </span>
+                                  </div>
+                                  <p style={{
+                                    fontSize: '12px',
+                                    color: '#9ca3af',
+                                    margin: 0
+                                  }}>
+                                    생성일: {new Date(report.createdAt).toLocaleString('ko-KR')}
+                                  </p>
+                                </div>
+                                <div style={{
+                                  display: 'flex',
+                                  gap: '8px'
+                                }}>
+                                  <button
+                                    onClick={async () => {
+                                      if (confirm('이 리포트를 삭제하시겠습니까?')) {
+                                        await deleteReport(report.id)
+                                      }
+                                    }}
+                                    style={{
+                                      padding: '6px',
+                                      background: 'none',
+                                      border: '1px solid #ef4444',
+                                      borderRadius: '6px',
+                                      color: '#ef4444',
+                                      cursor: 'pointer',
+                                      fontSize: '12px',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center'
+                                    }}
+                                    title="삭제"
+                                  >
+                                    <Icons.Delete />
+                                  </button>
+                                </div>
+                              </div>
+                              <div style={{
+                                backgroundColor: '#f9fafb',
+                                padding: '12px',
+                                borderRadius: '6px',
+                                border: '1px solid #f3f4f6'
+                              }}>
+                                <div style={{
+                                  fontSize: '13px',
+                                  lineHeight: '1.6',
+                                  color: '#374151',
+                                  maxHeight: '120px',
+                                  overflowY: 'auto',
+                                  whiteSpace: 'pre-wrap'
+                                }}>
+                                  {report.content}
+                                </div>
+                                {report.contentEn && (
+                                  <div style={{
+                                    marginTop: '12px',
+                                    paddingTop: '12px',
+                                    borderTop: '1px solid #e5e7eb'
+                                  }}>
+                                    <div style={{
+                                      fontSize: '12px',
+                                      fontWeight: '600',
+                                      color: '#6b7280',
+                                      marginBottom: '6px'
+                                    }}>
+                                      English Version:
+                                    </div>
+                                    <div style={{
+                                      fontSize: '13px',
+                                      lineHeight: '1.6',
+                                      color: '#374151',
+                                      maxHeight: '100px',
+                                      overflowY: 'auto',
+                                      whiteSpace: 'pre-wrap'
+                                    }}>
+                                      {report.contentEn}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          ))
                         )}
                       </div>
                     )}
@@ -3138,196 +3067,6 @@ export default function AdminDashboard() {
       )}
 
       {/* 에러 메시지 */}
-      {/* 리포트 삭제 확인 모달 */}
-      {showDeleteReportModal && reportToDelete && (
-        <div className={styles.modalOverlay} onClick={() => setShowDeleteReportModal(false)}>
-          <div className={styles.modal} onClick={(e) => e.stopPropagation()} style={{
-            maxWidth: '480px',
-            borderRadius: '16px',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-            border: 'none'
-          }}>
-            {/* 모달 헤더 */}
-            <div style={{
-              padding: '24px 24px 16px',
-              borderBottom: '1px solid #f3f4f6',
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: '16px'
-            }}>
-              <div style={{
-                width: '48px',
-                height: '48px',
-                background: 'linear-gradient(135deg, #fef3c7 0%, #fbbf24 100%)',
-                borderRadius: '12px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0
-              }}>
-                ⚠️
-              </div>
-              <div style={{ flex: 1 }}>
-                <h2 style={{
-                  fontSize: '20px',
-                  fontWeight: '600',
-                  color: '#111827',
-                  margin: '0 0 8px 0',
-                  lineHeight: '1.3'
-                }}>리포트 삭제 확인</h2>
-                <p style={{
-                  fontSize: '14px',
-                  color: '#6b7280',
-                  margin: 0,
-                  lineHeight: '1.5'
-                }}>선택한 리포트를 영구적으로 삭제하시겠습니까?</p>
-              </div>
-              <button
-                onClick={() => setShowDeleteReportModal(false)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  padding: '8px',
-                  borderRadius: '8px',
-                  transition: 'background-color 0.2s',
-                  color: '#6b7280'
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-              >
-                <Icons.Close />
-              </button>
-            </div>
-
-            {/* 리포트 정보 */}
-            <div style={{ padding: '20px 24px' }}>
-              <div style={{
-                backgroundColor: '#f9fafb',
-                border: '1px solid #e5e7eb',
-                borderRadius: '8px',
-                padding: '16px'
-              }}>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  marginBottom: '8px'
-                }}>
-                  <span style={{
-                    backgroundColor: reportToDelete.type === 'NOW' ? '#dbeafe' : '#fef3c7',
-                    color: reportToDelete.type === 'NOW' ? '#1e40af' : '#92400e',
-                    padding: '2px 8px',
-                    borderRadius: '4px',
-                    fontSize: '12px',
-                    fontWeight: '500'
-                  }}>
-                    {reportToDelete.type}
-                  </span>
-                  <span style={{ fontSize: '14px', color: '#6b7280' }}>
-                    {new Date(reportToDelete.date).toLocaleDateString('ko-KR')}
-                  </span>
-                </div>
-                <p style={{
-                  fontSize: '13px',
-                  color: '#374151',
-                  margin: 0,
-                  maxHeight: '60px',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis'
-                }}>
-                  {reportToDelete.content?.substring(0, 100) || ''}...
-                </p>
-              </div>
-              
-              <div style={{
-                backgroundColor: '#fef2f2',
-                border: '1px solid #fecaca',
-                borderRadius: '6px',
-                padding: '12px',
-                marginTop: '16px'
-              }}>
-                <p style={{
-                  fontSize: '13px',
-                  color: '#991b1b',
-                  margin: 0,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px'
-                }}>
-                  <span>⚠️</span>
-                  <span>이 작업은 되돌릴 수 없습니다. 삭제된 리포트는 복구할 수 없습니다.</span>
-                </p>
-              </div>
-            </div>
-
-            {/* 모달 푸터 */}
-            <div style={{
-              padding: '16px 24px 24px',
-              display: 'flex',
-              gap: '12px',
-              justifyContent: 'flex-end'
-            }}>
-              <button
-                onClick={() => setShowDeleteReportModal(false)}
-                style={{
-                  padding: '10px 20px',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  color: '#374151',
-                  backgroundColor: 'white',
-                  border: '1px solid #d1d5db',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#f9fafb'
-                  e.currentTarget.style.borderColor = '#9ca3af'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'white'
-                  e.currentTarget.style.borderColor = '#d1d5db'
-                }}
-              >
-                취소
-              </button>
-              <button
-                onClick={async () => {
-                  await deleteReportWithoutConfirm(reportToDelete.id)
-                  setShowDeleteReportModal(false)
-                  setReportToDelete(null)
-                }}
-                style={{
-                  padding: '10px 20px',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  color: 'white',
-                  background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
-                  border: 'none',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  boxShadow: '0 2px 4px rgba(239, 68, 68, 0.2)'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)'
-                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.4)'
-                  e.currentTarget.style.transform = 'translateY(-1px)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'
-                  e.currentTarget.style.boxShadow = '0 2px 4px rgba(239, 68, 68, 0.2)'
-                  e.currentTarget.style.transform = 'translateY(0)'
-                }}
-              >
-                삭제하기
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {error && (
         <div className={styles.errorToast}>
           {error}

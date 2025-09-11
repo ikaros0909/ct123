@@ -47,8 +47,16 @@ export default function Home() {
   const [mainData, setMainData] = useState<SamsungMainData[]>([])
   const [analysisData, setAnalysisData] = useState<SamsungAnalysisData[]>([])
   const [loading, setLoading] = useState(false)
-  const [selectedDate, setSelectedDate] = useState('')
-  const [currentDate, setCurrentDate] = useState('')
+  // 한국 시간 기준 오늘 날짜 계산 (간단한 방식)
+  const getKoreanToday = () => {
+    const now = new Date()
+    // UTC 시간에 9시간 더하기
+    now.setHours(now.getHours() + 9)
+    return now.toISOString().split('T')[0]
+  }
+  
+  const [selectedDate, setSelectedDate] = useState(getKoreanToday())
+  const [currentDate, setCurrentDate] = useState(getKoreanToday())
   const [matrixFilter, setMatrixFilter] = useState('all')
   const [matrixSort, setMatrixSort] = useState('number')
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
@@ -76,10 +84,7 @@ export default function Home() {
   const [lastUpdated, setLastUpdated] = useState<string>('') // 마지막 업데이트 시간 상태 추가
 
   useEffect(() => {
-    // 현재 날짜 설정
-    const today = new Date().toISOString().split('T')[0]
-    setCurrentDate(today)
-    if (!selectedDate) setSelectedDate(today)
+    // 날짜는 이미 useState에서 초기화됨
     
     // 마지막 업데이트 시간 설정 (클라이언트 사이드에서만)
     setLastUpdated(new Date().toLocaleDateString('en-US', { 
@@ -154,14 +159,20 @@ export default function Home() {
     if (!selectedCompany || !selectedDate) return
     
     try {
+      console.log('리포트 요청:', {
+        companyId: selectedCompany.id,
+        date: selectedDate
+      })
       const response = await fetch(`/api/reports?companyId=${selectedCompany.id}&date=${selectedDate}`)
       if (response.ok) {
         const data = await response.json()
         setReports(data)
-        console.log('리포트 로드 완료:', data.length, '개')
+        console.log('리포트 로드 완료:', data.length, '개', data)
+      } else {
+        console.error('리포트 로드 실패:', response.status, response.statusText)
       }
     } catch (error) {
-      console.error('리포트 로드 실패:', error)
+      console.error('리포트 로드 오류:', error)
     }
   }
 
@@ -830,24 +841,24 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Now, Insight report (below chart) */}
+        {/* Insight, Now report (below chart) */}
         <div className="mb-8">
           <div className="card p-6">
-            {nowReport || insightReport ? (
+            {insightReport || nowReport ? (
               <div className="space-y-6">
-                {nowReport && (
-                  <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">{t('NowReport')}</h4>
-                    <div className="whitespace-pre-wrap text-sm text-gray-700 bg-gray-50 p-4 rounded-lg">
-                      {lang === 'ko' ? nowReport.content : (nowReport.contentEn || nowReport.content)}
-                    </div>
-                  </div>
-                )}
                 {insightReport && (
                   <div>
                     <h4 className="font-semibold text-gray-900 mb-2">{t('InsightReport')}</h4>
                     <div className="whitespace-pre-wrap text-sm text-gray-700 bg-blue-50 p-4 rounded-lg">
                       {lang === 'ko' ? insightReport.content : (insightReport.contentEn || insightReport.content)}
+                    </div>
+                  </div>
+                )}
+                {nowReport && (
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-2">{t('NowReport')}</h4>
+                    <div className="whitespace-pre-wrap text-sm text-gray-700 bg-gray-50 p-4 rounded-lg">
+                      {lang === 'ko' ? nowReport.content : (nowReport.contentEn || nowReport.content)}
                     </div>
                   </div>
                 )}

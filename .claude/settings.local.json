@@ -34,7 +34,9 @@
       "Bash(npx prisma:*)",
       "Bash(sed:*)",
       "Bash(npx tsc:*)",
-      "Bash(powershell:*)"
+      "Bash(powershell:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(awk:*)"
     ],
     "deny": [],
     "ask": []
