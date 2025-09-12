@@ -323,10 +323,10 @@ export default function AdminDashboard() {
 
   // 선택된 회사 또는 날짜가 변경될 때 리포트 로드
   useEffect(() => {
-    if (selectedCompany && analysisDate) {
-      loadReports(selectedCompany.id, analysisDate)
+    if (selectedCompany && selectedDate) {
+      loadReports(selectedCompany.id, selectedDate)
     }
-  }, [selectedCompany, analysisDate])
+  }, [selectedCompany, selectedDate])
 
 
   // GPT 설정 로드
@@ -1623,11 +1623,15 @@ export default function AdminDashboard() {
                     >
                       <option value="">모든 날짜</option>
                       {/* 분석 데이터에서 고유한 날짜 추출 */}
-                      {Array.from(new Set(analysisData.map(item => item.date)))
+                      {Array.from(new Set(analysisData.map(item => {
+                        // ISO 날짜를 YYYY-MM-DD 형식으로 변환
+                        const d = new Date(item.date);
+                        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                      })))
                         .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())
                         .map(date => (
                           <option key={date} value={date}>
-                            {new Date(date).toLocaleDateString()}
+                            {new Date(date + 'T00:00:00').toLocaleDateString('ko-KR')}
                           </option>
                         ))
                       }
@@ -1649,7 +1653,10 @@ export default function AdminDashboard() {
                     {categories.map(category => {
                       const categoryAnalysis = analysisData.filter(item => {
                         if (selectedDate) {
-                          return item.category === category && item.date === selectedDate
+                          // item.date (ISO 형식)를 YYYY-MM-DD로 변환하여 비교
+                          const itemDate = new Date(item.date);
+                          const formattedDate = `${itemDate.getFullYear()}-${String(itemDate.getMonth() + 1).padStart(2, '0')}-${String(itemDate.getDate()).padStart(2, '0')}`;
+                          return item.category === category && formattedDate === selectedDate
                         }
                         return item.category === category
                       })
@@ -1700,7 +1707,13 @@ export default function AdminDashboard() {
                       </thead>
                       <tbody>
                         {analysisData
-                          .filter(item => selectedDate ? item.date === selectedDate : true)
+                          .filter(item => {
+                            if (!selectedDate) return true;
+                            // item.date (ISO 형식)를 YYYY-MM-DD로 변환하여 비교
+                            const itemDate = new Date(item.date);
+                            const formattedDate = `${itemDate.getFullYear()}-${String(itemDate.getMonth() + 1).padStart(2, '0')}-${String(itemDate.getDate()).padStart(2, '0')}`;
+                            return formattedDate === selectedDate;
+                          })
                           .map(item => (
                           <tr key={item.id}>
                             <td>{new Date(item.date).toLocaleDateString()}</td>
@@ -1873,11 +1886,13 @@ export default function AdminDashboard() {
                         <Icons.Document />
                         <p style={{ margin: '8px 0 0 0' }}>
                           {selectedCompany 
-                            ? '해당 날짜에 생성된 AI 분석 리포트가 없습니다.'
+                            ? selectedDate 
+                              ? `${new Date(selectedDate).toLocaleDateString('ko-KR')}에 생성된 AI 분석 리포트가 없습니다.`
+                              : '날짜를 선택하면 AI 분석 리포트를 확인할 수 있습니다.'
                             : '회사를 선택하면 AI 분석 리포트를 확인할 수 있습니다.'
                           }
                         </p>
-                        {selectedCompany && (
+                        {selectedCompany && selectedDate && (
                           <p style={{ margin: '4px 0 0 0', fontSize: '12px' }}>
                             AI 분석을 실행하여 리포트를 생성해보세요.
                           </p>
@@ -3003,6 +3018,12 @@ export default function AdminDashboard() {
                         // 분석 데이터 다시 로드
                         if (selectedCompany) {
                           loadCompanyData(selectedCompany.id);
+                          // 리포트도 다시 로드
+                          if (analysisDate) {
+                            // selectedDate를 analysisDate로 업데이트
+                            setSelectedDate(analysisDate);
+                            loadReports(selectedCompany.id, analysisDate);
+                          }
                         }
                       } else {
                         const error = await res.json();
