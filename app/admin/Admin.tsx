@@ -2933,7 +2933,10 @@ export default function AdminDashboard() {
                       const items = mainData.map(item => item.sequenceNumber);
                       
                       addLog('API 요청 전송...');
-                      const res = await fetch('/api/analyze', {
+                      const apiUrl = '/api/analyze';
+                      addLog(`📡 요청 URL: ${window.location.origin}${apiUrl}`);
+                      
+                      const res = await fetch(apiUrl, {
                         method: 'POST',
                         headers: {
                           'Content-Type': 'application/json',
@@ -2950,8 +2953,40 @@ export default function AdminDashboard() {
                       // 시뮬레이션 중단
                       clearInterval(progressInterval);
                       
+                      // 응답 상태 확인
+                      addLog(`📊 응답 상태: ${res.status} ${res.statusText}`);
+                      addLog(`📍 응답 URL: ${res.url}`);
+                      addLog(`📝 Content-Type: ${res.headers.get('content-type')}`);
+                      
+                      // 응답 텍스트 먼저 확인
+                      const responseText = await res.text();
+                      
+                      // HTML 응답인지 확인
+                      if (responseText.startsWith('<') || responseText.includes('<!DOCTYPE')) {
+                        addLog('⚠️ HTML 응답 감지 - API 엔드포인트 문제 가능성');
+                        addLog('📄 응답 내용 (첫 500자):');
+                        addLog(responseText.substring(0, 500));
+                        
+                        // HTML 내용에서 에러 메시지 추출 시도
+                        const titleMatch = responseText.match(/<title>(.*?)<\/title>/i);
+                        if (titleMatch) {
+                          addLog(`📌 페이지 제목: ${titleMatch[1]}`);
+                        }
+                        
+                        throw new Error('API가 HTML을 반환했습니다. 서버 설정이나 라우팅 문제일 수 있습니다.');
+                      }
+                      
+                      // JSON 파싱 시도
+                      let result;
+                      try {
+                        result = JSON.parse(responseText);
+                      } catch (parseError) {
+                        addLog('❌ JSON 파싱 실패');
+                        addLog(`응답 내용: ${responseText.substring(0, 200)}`);
+                        throw new Error('잘못된 API 응답 형식');
+                      }
+                      
                       if (res.ok) {
-                        const result = await res.json();
                         setAnalysisProgress(100);
                         
                         // 분석 상태 정보 설정
