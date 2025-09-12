@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { withAuth, AuthenticatedRequest } from '@/lib/middleware'
 
+// 동적 렌더링 강제 (searchParams 사용으로 인한 정적 생성 오류 방지)
+export const dynamic = 'force-dynamic'
+
 // 한국 시간으로 날짜 변환 함수
 function toKoreanDate(dateString: string): Date | null {
   // 날짜 문자열 유효성 검사

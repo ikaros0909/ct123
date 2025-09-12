@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/auth'
 import { testMainData, testCompanies, addMainData, deleteMultipleMainData } from '@/lib/testDataStore'
 
+// 동적 렌더링 강제 (searchParams 사용으로 인한 정적 생성 오류 방지)
+export const dynamic = 'force-dynamic'
+
 // GET /api/admin/main-data - 모든 분석항목 조회
 export async function GET(request: NextRequest) {
   const authResult = await requireAdmin(request)

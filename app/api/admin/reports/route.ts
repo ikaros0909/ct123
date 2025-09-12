@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { withAuth, AuthenticatedRequest } from '@/lib/middleware'
 
+// 동적 렌더링 강제 (searchParams 사용으로 인한 정적 생성 오류 방지)
+export const dynamic = 'force-dynamic'
+
 // 전체 리포트 목록 조회 (GET /api/admin/reports)
 export async function GET(request: NextRequest) {
   return withAuth(request, async (req: AuthenticatedRequest) => {

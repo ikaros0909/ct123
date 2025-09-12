@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+// 동적 렌더링 강제 (searchParams 사용으로 인한 정적 생성 오류 방지)
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
     // 토큰 확인
