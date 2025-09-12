@@ -33,7 +33,7 @@ npm install -g pm2
 npm run pm2:start
 
 # 또는 직접 PM2 명령어 사용
-pm2 start ecosystem.config.js
+pm2 start scripts/pm2/ecosystem.config.js
 ```
 
 ### PM2 관리 명령어

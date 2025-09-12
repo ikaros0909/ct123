@@ -36,7 +36,8 @@
       "Bash(npx tsc:*)",
       "Bash(powershell:*)",
       "mcp__ide__getDiagnostics",
-      "Bash(awk:*)"
+      "Bash(awk:*)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []

@@ -23,18 +23,9 @@ export async function POST(request: NextRequest) {
     try {
       const { date, categories, items, selectionMode, companyId } = await req.json()
       
-      console.log(`\n${'='.repeat(50)}`)
-      console.log(`📊 AI 분석 시작`)
-      console.log(`${'='.repeat(50)}`)
-      console.log(`📍 회사: ${companyId}`)
-      console.log(`📅 분석 날짜: ${date}`)
-      console.log(`🔍 선택 모드: ${selectionMode}`)
-      console.log(`📂 선택된 카테고리: ${categories || '없음'}`)
-      console.log(`📝 선택된 항목: ${items || '없음'}`)
       
       // 한국 시간 기준으로 날짜 처리
       const koreanDate = toKoreanDate(date)
-      console.log(`🕐 한국 시간 변환: ${koreanDate.toISOString()}`)
       
       if (!date || !companyId) {
         return NextResponse.json({ error: 'Date and companyId are required' }, { status: 400 })
@@ -54,9 +45,6 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Company not found' }, { status: 404 })
       }
 
-      console.log(`\n🏢 회사 정보:`)
-      console.log(`  - 이름: ${company.nameKr || company.name}`)
-      console.log(`  - 시스템 프롬프트: ${company.systemPrompt ? '설정됨' : '없음'}`)
 
       // 메인 데이터 가져오기
       let mainDataQuery: any = { companyId }
@@ -75,7 +63,6 @@ export async function POST(request: NextRequest) {
         ]
       })
 
-      console.log(`분석할 항목 수: ${mainData.length}개`)
 
       const newAnalysisData: any[] = []
       const status: Record<number, any> = {}
@@ -94,15 +81,11 @@ export async function POST(request: NextRequest) {
 
           if (openai) {
             // GPT를 사용한 실제 분석
-            console.log(`\n=== 분석 항목 ${item.sequenceNumber} ===`)
-            console.log(`항목: ${item.item}`)
-            console.log(`질문: ${item.question}`)
             
             // 회사별 시스템 프롬프트 구성
             let systemPromptContent = ''
             
             if (company.systemPrompt) {
-              console.log(`시스템 프롬프트 적용: ${company.systemPrompt.substring(0, 100)}...`)
               systemPromptContent = company.systemPrompt + '\n\n'
             }
             
@@ -151,7 +134,6 @@ export async function POST(request: NextRequest) {
             })
 
             const response = completion.choices[0]?.message?.content?.trim()
-            console.log(`GPT 응답: "${response}"`)
 
             if (response) {
               const match = response.match(/-?\d+/)
@@ -164,7 +146,6 @@ export async function POST(request: NextRequest) {
             source = 'GPT-4 Analysis'
           } else {
             // OpenAI API 키가 없으면 랜덤 데이터 생성
-            console.log('⚠️ OpenAI API 키가 없어서 더미 데이터를 생성합니다.')
             aiHIndex = Math.floor(Math.random() * 7) - 3
             source = 'Dummy Data'
           }
@@ -200,19 +181,16 @@ export async function POST(request: NextRequest) {
               where: { id: existingAnalysis.id },
               data: analysisData
             })
-            console.log(`📝 항목 ${item.sequenceNumber} 분석 업데이트`)
           } else {
             // 새로운 분석 데이터 생성
             analysis = await prisma.analysis.create({
               data: analysisData
             })
-            console.log(`📝 항목 ${item.sequenceNumber} 분석 저장`)
           }
 
           newAnalysisData.push(analysis)
           status[item.sequenceNumber] = { status: 'success', item: item.item || item.question, aiHIndex }
           
-          console.log(`✅ 항목 ${item.sequenceNumber} 분석 완료: AI_H지수 = ${aiHIndex}`)
 
           // API 호출 간격 조절
           if (openai) {
@@ -224,7 +202,6 @@ export async function POST(request: NextRequest) {
           console.error(`   - Error Type: ${error?.name || 'Unknown'}`)
           console.error(`   - Error Message: ${errorMessage}`)
           console.error(`   - Stack Trace:`, error?.stack)
-          // console.log(` GPT OPENAI_API_KEY: ${process.env.OPENAI_API_KEY}`)
           
           // 오류 상세 정보 저장
           status[item.sequenceNumber] = {
@@ -237,7 +214,6 @@ export async function POST(request: NextRequest) {
 
       // 모든 분석이 완료되면 요약 리포트 생성
       if (newAnalysisData.length > 0) {
-        console.log('\n=== 요약 리포트 생성 ===')
         
         // 카테고리별 평균 점수 계산
         const categoryScores = mainData.reduce((acc, item, index) => {
@@ -261,7 +237,6 @@ export async function POST(request: NextRequest) {
         // 기업 이슈 검색 및 분석 함수 (실시간 우선, 실패시 최신 정보 제공)
         const searchCompanyIssues = async (companyName: string, date: string) => {
           try {
-            console.log(`🔍 ${companyName} 이슈 검색 시작`)
             
             // GPT에게 실제 분석을 요청 (구체적인 정보 생성)
             const searchPrompt = `${companyName}에 대한 구체적이고 실질적인 투자 분석을 수행해주세요.
@@ -349,7 +324,6 @@ export async function POST(request: NextRequest) {
             if (searchResponse.ok) {
               const searchData = await searchResponse.json()
               const searchResults = searchData.choices[0]?.message?.content?.trim() || ''
-              console.log(`✅ 기업 정보 검색 완료: ${searchResults.length}자`)
               
               // 검색 결과가 있으면 투자 관점의 요약 생성
               if (searchResults && searchResults.length > 10) {
@@ -412,7 +386,6 @@ ${searchResults}
                     const summaryData = await summaryResponse.json()
                     const finalSummary = summaryData.choices[0]?.message?.content?.trim()
                     if (finalSummary && finalSummary.length > 10) {
-                      console.log(`✅ 투자 관점 요약 생성 완료: ${finalSummary.length}자`)
                       return finalSummary
                     }
                   }
@@ -521,7 +494,6 @@ ${generalNews}
             }
 
             // 일반 뉴스 검색도 실패하면 GPT에게 직접 분석 요청
-            console.log('📝 GPT 직접 분석 요청')
             
             try {
               // GPT에게 기업 분석 직접 요청
@@ -594,7 +566,6 @@ ${generalNews}
                 const directAnalysis = directAnalysisData.choices[0]?.message?.content?.trim()
                 
                 if (directAnalysis && directAnalysis.length > 100) {
-                  console.log(`✅ GPT 직접 분석 성공: ${directAnalysis.length}자`)
                   
                   const formattedDate = new Date(date + 'T00:00:00+09:00').toLocaleDateString('ko-KR', {
                     year: 'numeric',
@@ -622,7 +593,6 @@ ${directAnalysis}
             }
             
             // GPT 직접 분석도 실패하면 템플릿 기반 분석 제공
-            console.log('⚠️ 템플릿 기반 분석으로 대체')
             
             // 기업명에 따른 업종 추정
             let industryType = '일반'
@@ -1132,7 +1102,6 @@ ${factCheckedInfo}
         let factBasedInsights = ''
         if (companyIssues) {
           factBasedInsights = await generateFactBasedInsights(avgScore, companyIssues)
-          console.log(`✅ 실시간 이슈 기반 인사이트 생성 완료: ${factBasedInsights.length}자`)
         }
 
         // 카테고리별 분석을 자연스러운 문장으로 변환하는 함수
@@ -1367,9 +1336,6 @@ Mixed positive and negative factors require selective investment strategy. Prepa
           }
         }
 
-        console.log('📄 팩트체크 기반 Now 리포트 생성 완료:', nowReportKr.length, '자')
-        console.log('📄 팩트체크 기반 Now 리포트 영문 생성 완료:', nowReportEn.length, '자')
-        console.log('📊 팩트 기반 인사이트 리포트 생성 완료:', insightReportKr.length, '자')
         
         // 리포트를 DB에 저장 (한글/영문 버전 모두)
         try {
@@ -1439,17 +1405,12 @@ Mixed positive and negative factors require selective investment strategy. Prepa
             })
           }
 
-          console.log('✅ 팩트체크 기반 요약 리포트 저장 완료 (한글/영문 버전)')
-          console.log('   - NOW 리포트: 검증된 최신 이슈 정보 포함')
-          console.log('   - INSIGHT 리포트: 팩트 기반 투자 인사이트 포함')
         } catch (error: any) {
           console.error('리포트 저장 실패:')
           console.error('  - Error:', error?.message || error)
         }
       }
 
-      console.log(`\n=== 분석 완료 ===`)
-      console.log(`분석 날짜: ${date}`)
       console.log(`새로 추가된 데이터: ${newAnalysisData.length}개`)
 
       return NextResponse.json({ 

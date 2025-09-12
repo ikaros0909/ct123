@@ -53,8 +53,6 @@ Rules:
           console.error('OpenAI translation error:', error)
           // Fall back to original text if translation fails
         }
-      } else if (!openai) {
-        console.log('⚠️ OpenAI API key not available, returning original text')
       }
 
       return NextResponse.json({ 

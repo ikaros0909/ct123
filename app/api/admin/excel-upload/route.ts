@@ -41,9 +41,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log(`\n=== 엑셀 업로드 시작 ===`)
-    console.log(`회사 ID: ${companyId}`)
-    console.log(`업로드 항목 수: ${items.length}개`)
 
     // 회사 확인
     const company = await prisma.company.findUnique({
@@ -78,7 +75,6 @@ export async function POST(request: NextRequest) {
     }
 
     // 데이터 일괄 삽입
-    console.log('새 데이터 추가 중...')
     const createData = items.map((item: any) => ({
       companyId,
       sequenceNumber: item.sequenceNumber,

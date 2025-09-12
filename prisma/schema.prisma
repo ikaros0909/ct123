@@ -8,18 +8,110 @@ datasource db {
 }
 
 model User {
-  id             String    @id @default(cuid())
-  email          String    @unique
-  password       String
-  name           String?
-  role           UserRole  @default(USER)
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  lastLoginAt    DateTime?
-  
-  analyses       Analysis[]
-  mainData       MainData[]
-  reports        Report[]
+  id          String     @id @default(cuid())
+  email       String     @unique
+  password    String
+  name        String?
+  role        UserRole   @default(USER)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  lastLoginAt DateTime?
+  analyses    Analysis[]
+  mainData    MainData[]
+  reports     Report[]
+}
+
+model Company {
+  id           String     @id @default(cuid())
+  name         String     @unique
+  nameKr       String?
+  description  String?
+  systemPrompt String?
+  order        Int        @default(0)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  analyses     Analysis[]
+  mainData     MainData[]
+  reports      Report[]
+}
+
+model MainData {
+  id              String   @id @default(cuid())
+  companyId       String
+  sequenceNumber  Int
+  item            String
+  itemEn          String?
+  question        String
+  questionEn      String?
+  scale           Int
+  generalRule     String
+  generalRuleEn   String?
+  modifiedScale   Int
+  cumulativeScore Int
+  weight          Float
+  index           Float
+  source          String?
+  sourceEn        String?
+  category        String
+  categoryEn      String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  userId          String?
+  company         Company  @relation(fields: [companyId], references: [id])
+  user            User?    @relation(fields: [userId], references: [id])
+
+  @@index([companyId])
+  @@index([category])
+  @@index([sequenceNumber])
+}
+
+model Analysis {
+  id              String   @id @default(cuid())
+  companyId       String
+  date            DateTime
+  sequenceNumber  Int
+  item            String
+  scale           Int
+  modifiedScale   Int
+  cumulativeScore Int
+  weight          Float
+  index           Float
+  category        String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  userId          String?
+  company         Company  @relation(fields: [companyId], references: [id])
+  user            User?    @relation(fields: [userId], references: [id])
+
+  @@index([companyId])
+  @@index([date])
+  @@index([category])
+}
+
+model Report {
+  id        String     @id @default(cuid())
+  companyId String
+  date      DateTime
+  type      ReportType
+  content   String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  userId    String?
+  contentEn String?
+  company   Company    @relation(fields: [companyId], references: [id])
+  user      User?      @relation(fields: [userId], references: [id])
+
+  @@unique([companyId, date, type])
+  @@index([companyId])
+  @@index([date])
+}
+
+model SystemSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum UserRole {
@@ -27,101 +119,7 @@ enum UserRole {
   ADMIN
 }
 
-model Company {
-  id             String    @id @default(cuid())
-  name           String    @unique
-  nameKr         String?
-  description    String?
-  systemPrompt   String?   @db.Text // 시스템 프롬프트 (모든 분석 항목에 공통 적용)
-  order          Int       @default(0) // 정렬 순서
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  
-  analyses       Analysis[]
-  mainData       MainData[]
-  reports        Report[]
-}
-
-model MainData {
-  id                 String    @id @default(cuid())
-  companyId          String
-  company            Company   @relation(fields: [companyId], references: [id])
-  sequenceNumber     Int       // 연번
-  item               String    @db.Text // 항목
-  itemEn             String?   @db.Text // 항목 (영어)
-  question           String    @db.Text // 질문
-  questionEn         String?   @db.Text // 질문 (영어)
-  scale              Int       // 척도
-  generalRule        String    @db.Text // 일반법칙 or 일반 법칙
-  generalRuleEn      String?   @db.Text // 일반법칙 (영어)
-  modifiedScale      Int       // 수정된 척도
-  cumulativeScore    Int       // 척도 누적점수
-  weight             Float     // 가중치
-  index              Float     // 지수
-  source             String?   @db.Text // 출처
-  sourceEn           String?   @db.Text // 출처 (영어)
-  category           String    // 구분
-  categoryEn         String?   // 구분 (영어)
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
-  userId             String?
-  user               User?     @relation(fields: [userId], references: [id])
-  
-  @@index([companyId])
-  @@index([category])
-  @@index([sequenceNumber])
-}
-
-model Analysis {
-  id                 String    @id @default(cuid())
-  companyId          String
-  company            Company   @relation(fields: [companyId], references: [id])
-  date               DateTime
-  sequenceNumber     Int       // 연번
-  item               String    // 항목
-  scale              Int       // 척도
-  modifiedScale      Int       // 수정된 척도  
-  cumulativeScore    Int       // 척도 누적점수
-  weight             Float     // 가중치
-  index              Float     // 지수
-  category           String    // 구분
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
-  userId             String?
-  user               User?     @relation(fields: [userId], references: [id])
-  
-  @@index([companyId])
-  @@index([date])
-  @@index([category])
-}
-
-model Report {
-  id                 String    @id @default(cuid())
-  companyId          String
-  company            Company   @relation(fields: [companyId], references: [id])
-  date               DateTime  // 분석 날짜
-  type               ReportType // NOW, INSIGHT
-  content            String    @db.Text // 리포트 내용 (한글)
-  contentEn          String?   @db.Text // 리포트 내용 (영문)
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
-  userId             String?
-  user               User?     @relation(fields: [userId], references: [id])
-  
-  @@index([companyId])
-  @@index([date])
-  @@unique([companyId, date, type])
-}
-
 enum ReportType {
   NOW
   INSIGHT
-}
-
-model SystemSetting {
-  id        String   @id @default(cuid())
-  key       String   @unique
-  value     String   @db.Text
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }

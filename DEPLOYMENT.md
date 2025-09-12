@@ -1,164 +1,143 @@
-# Samsung Analysis - Deployment Guide
+# CT123 배포 가이드
 
-## Prerequisites
+## 사전 준비사항
 
-- Node.js 18+ 
-- PostgreSQL 14+
-- npm or yarn
+1. Node.js 18.x 이상
+2. PostgreSQL 14 이상
+3. PM2 (프로세스 관리용)
 
-## Environment Setup
+## 배포 단계
 
-1. Copy the environment variables template:
+### 1. 코드 배포
 ```bash
-cp .env.example .env
-```
+# 저장소 클론 또는 업데이트
+git pull origin main
 
-2. Update the `.env` file with your configuration:
-```env
-# Database
-DATABASE_URL="postgresql://username:password@localhost:5432/samsung_db?schema=public"
-
-# JWT Secret (generate a secure random string)
-JWT_SECRET="your-secure-jwt-secret-key"
-
-# OpenAI API
-OPENAI_API_KEY="sk-your-openai-api-key"
-
-# Admin Password (optional, defaults to Admin@123!)
-ADMIN_PASSWORD="YourSecureAdminPassword"
-```
-
-## Installation
-
-1. Install dependencies:
-```bash
+# 의존성 설치
 npm install
 ```
 
-2. Setup database and create admin account:
-```bash
-# Push database schema
-npm run db:push
-
-# Create admin account and seed data
-npm run db:seed
+### 2. 환경 변수 설정
+`.env` 파일 생성:
+```env
+DATABASE_URL="postgresql://username:password@localhost:5432/ct123_db?schema=public"
+NEXTAUTH_SECRET="your-secret-key"
+NEXTAUTH_URL="http://your-domain.com"
+OPENAI_API_KEY="your-openai-api-key"
 ```
 
-## Admin Account
+### 3. 데이터베이스 설정
 
-The seed script creates an admin account with the following credentials:
-
-- **Email**: `admin@ct123.kr`
-- **Password**: `Admin@123!` (or value from ADMIN_PASSWORD env variable)
-- **Role**: ADMIN
-
-⚠️ **IMPORTANT**: Change the admin password immediately after first login!
-
-## Database Setup Commands
-
+#### 신규 설치의 경우:
 ```bash
-# Push schema to database
-npm run db:push
+# 데이터베이스 생성
+createdb ct123_db
 
-# Run migrations (production)
+# 마이그레이션 실행
 npx prisma migrate deploy
 
-# Run seed (creates admin account)
-npm run db:seed
+# Prisma Client 생성
+npx prisma generate
 
-# Complete setup (push + seed)
-npm run db:setup
+# 초기 데이터 시드 (선택사항)
+npx prisma db seed
 ```
 
-## Build and Deploy
-
-### Development
+#### 기존 데이터베이스가 있는 경우:
 ```bash
-npm run dev
+# 스키마 동기화 확인
+npx prisma migrate status
+
+# 새로운 마이그레이션이 있다면 적용
+npx prisma migrate deploy
+
+# Prisma Client 재생성
+npx prisma generate
 ```
 
-### Production Build
+### 4. 애플리케이션 빌드
 ```bash
+# Next.js 프로덕션 빌드
 npm run build
-npm run start
 ```
 
-### PM2 Deployment (Production)
+### 5. PM2로 실행
 ```bash
-# Start with PM2
+# PM2로 애플리케이션 시작
 npm run pm2:start
 
-# Start on port 80 (requires sudo)
-sudo npm run pm2:start:80
+# 또는
+pm2 start scripts/pm2/ecosystem.config.js
 
-# Other PM2 commands
-npm run pm2:status  # Check status
-npm run pm2:logs    # View logs
-npm run pm2:restart # Restart app
-npm run pm2:stop    # Stop app
+# 상태 확인
+pm2 status
+
+# 로그 확인
+pm2 logs ct123-app
 ```
 
-## Seed Script Details
+## 업데이트 배포
 
-The seed script (`prisma/seed.ts`) performs the following:
-
-1. **Creates Admin Account**:
-   - Email: `admin@ct123.kr`
-   - Password: From `ADMIN_PASSWORD` env or defaults to `Admin@123!`
-   - Name: CT123 Admin
-   - Role: ADMIN
-
-2. **Creates Sample Companies** (optional):
-   - 삼성전자 (Samsung Electronics)
-   - LG에너지솔루션 (LG Energy Solution)
-   - 현대자동차 (Hyundai Motor)
-
-## Re-running Seed
-
-The seed script is idempotent - it checks for existing data before creating:
-
+### 무중단 배포 (Zero-downtime deployment)
 ```bash
-# Run seed manually
-npm run prisma:seed
+# 1. 코드 업데이트
+git pull origin main
+npm install
 
-# Or using db:seed
-npm run db:seed
+# 2. 데이터베이스 마이그레이션 (필요시)
+npx prisma migrate deploy
+npx prisma generate
+
+# 3. 빌드
+npm run build
+
+# 4. PM2 재시작 (무중단)
+pm2 reload ct123-app
 ```
 
-## Security Notes
+## 문제 해결
 
-1. **Change default admin password** immediately after deployment
-2. **Generate secure JWT_SECRET** for production
-3. **Keep OPENAI_API_KEY** secure and never commit to version control
-4. **Use HTTPS** in production environment
-5. **Set proper database credentials** with limited permissions
+### 마이그레이션 관련 문제
 
-## Troubleshooting
-
-### Database Connection Issues
+#### 1. "No migration found" 오류
 ```bash
-# Test database connection
-psql -U samsung_user -d samsung_db -h localhost -c "SELECT 1"
+# 현재 데이터베이스를 기준으로 초기 마이그레이션 생성
+npx prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.prisma --script > prisma/migrations/20250911000000_init/migration.sql
+npx prisma migrate resolve --applied 20250911000000_init
 ```
 
-### Reset Admin Password
-If you forget the admin password, you can reset it by:
-1. Delete the admin user from database
-2. Re-run the seed script with new ADMIN_PASSWORD env variable
-
-### Clear All Data
+#### 2. 스키마 동기화 문제
 ```bash
-# Dangerous: This will delete all data!
-npx prisma db push --force-reset
-npm run db:seed
+# 데이터베이스 스키마를 Prisma 스키마와 동기화
+npx prisma db push
 ```
 
-## Environment Variables Summary
+### PM2 관련 문제
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| DATABASE_URL | Yes | PostgreSQL connection string |
-| JWT_SECRET | Yes | Secret key for JWT tokens |
-| OPENAI_API_KEY | Yes | OpenAI API key for AI analysis |
-| ADMIN_PASSWORD | No | Admin account password (default: Admin@123!) |
-| NEXT_PUBLIC_API_URL | No | API URL for frontend (default: http://localhost:3000) |
+#### 프로세스 재시작
+```bash
+pm2 restart ct123-app
+```
+
+#### 프로세스 중지
+```bash
+pm2 stop ct123-app
+```
+
+## 프로덕션 체크리스트
+
+- [ ] 환경 변수 설정 완료
+- [ ] 데이터베이스 연결 확인
+- [ ] 마이그레이션 적용 완료
+- [ ] Prisma Client 생성 완료
+- [ ] Next.js 빌드 성공
+- [ ] PM2 프로세스 실행 중
+- [ ] 애플리케이션 접속 테스트
+
+## 보안 고려사항
+
+1. **환경 변수**: `.env` 파일을 절대 커밋하지 마세요
+2. **시크릿 키**: 강력한 `NEXTAUTH_SECRET` 사용
+3. **데이터베이스**: 강력한 비밀번호 사용
+4. **방화벽**: 필요한 포트만 개방 (3000, 5432)
+5. **HTTPS**: 프로덕션에서는 반드시 SSL/TLS 사용

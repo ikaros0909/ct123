@@ -326,11 +326,6 @@ export default function AdminDashboard() {
     })
   }, [router])
 
-  // 디버깅: analysisDate 변경 추적
-  useEffect(() => {
-    console.log('analysisDate changed to:', analysisDate)
-  }, [analysisDate])
-  
   // 선택된 회사 또는 날짜가 변경될 때 리포트 로드
   useEffect(() => {
     if (selectedCompany && analysisDate) {
@@ -616,7 +611,6 @@ export default function AdminDashboard() {
         console.error('기업 순서 저장 실패:', error)
         setError('순서 저장에 실패했습니다')
       } else {
-        console.log('기업 순서 저장 성공')
         // 성공 메시지 표시
         setError(null)
         setSuccessMessage('기업 순서가 저장되었습니다')

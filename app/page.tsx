@@ -159,15 +159,10 @@ export default function Home() {
     if (!selectedCompany || !selectedDate) return
     
     try {
-      console.log('리포트 요청:', {
-        companyId: selectedCompany.id,
-        date: selectedDate
-      })
       const response = await fetch(`/api/reports?companyId=${selectedCompany.id}&date=${selectedDate}`)
       if (response.ok) {
         const data = await response.json()
         setReports(data)
-        console.log('리포트 로드 완료:', data.length, '개', data)
       } else {
         console.error('리포트 로드 실패:', response.status, response.statusText)
       }
@@ -221,8 +216,6 @@ export default function Home() {
         ...item
       }))
       
-      console.log(`${selectedCompany.nameKr || selectedCompany.name} 메인 데이터:`, transformedMainData.length, '개')
-      console.log(`${selectedCompany.nameKr || selectedCompany.name} 분석 데이터:`, transformedAnalysisData.length, '개')
       
       setMainData(transformedMainData)
       setAnalysisData(transformedAnalysisData)
