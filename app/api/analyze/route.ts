@@ -3,11 +3,6 @@ import { prisma } from '@/lib/prisma'
 import { withAuth, AuthenticatedRequest } from '@/lib/middleware'
 import OpenAI from 'openai'
 
-// OpenAI API 키가 있을 때만 클라이언트 초기화
-const openai = process.env.OPENAI_API_KEY ? new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-}) : null
-
 // 한국 시간으로 날짜 변환 함수
 function toKoreanDate(dateString: string): Date | null {
   // 날짜 문자열 유효성 검사
@@ -69,6 +64,38 @@ export async function POST(request: NextRequest) {
 
       if (!company) {
         return NextResponse.json({ error: 'Company not found' }, { status: 404 })
+      }
+      
+      // GPT 설정 가져오기 (DB에서 우선, 없으면 환경 변수 사용)
+      let apiKey: string | null = null
+      
+      try {
+        // DB에서 GPT 설정 조회
+        const gptSettings = await prisma.gPTSettings.findFirst({
+          orderBy: { updatedAt: 'desc' }
+        })
+        
+        if (gptSettings?.apiKey) {
+          apiKey = gptSettings.apiKey
+          console.log('[Analyze API] Using API key from database')
+        }
+      } catch (error) {
+        console.error('[Analyze API] Failed to fetch GPT settings from DB:', error)
+      }
+      
+      // DB에 API 키가 없으면 환경 변수 사용
+      if (!apiKey) {
+        apiKey = process.env.OPENAI_API_KEY || null
+        if (apiKey) {
+          console.log('[Analyze API] Using API key from environment variable')
+        }
+      }
+      
+      // OpenAI 클라이언트 초기화
+      const openai = apiKey ? new OpenAI({ apiKey }) : null
+      
+      if (!openai) {
+        console.warn('[Analyze API] No OpenAI API key available, using dummy data')
       }
 
 
