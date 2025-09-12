@@ -223,17 +223,58 @@ export async function POST(request: NextRequest) {
             await new Promise(resolve => setTimeout(resolve, 500))
           }
         } catch (error: any) {
-          const errorMessage = error?.message || error?.toString() || 'Unknown error'
+          let errorMessage = ''
+          let errorType = 'UNKNOWN_ERROR'
+          
+          // OpenAI API 오류 상세 분석
+          if (error?.error?.code === 'invalid_api_key') {
+            errorType = 'INVALID_API_KEY'
+            errorMessage = 'GPT API 키가 유효하지 않습니다. 설정에서 올바른 API 키를 입력해주세요.'
+          } else if (error?.error?.code === 'insufficient_quota') {
+            errorType = 'QUOTA_EXCEEDED'
+            errorMessage = 'GPT API 사용량이 초과되었습니다. OpenAI 계정의 결제 정보를 확인해주세요.'
+          } else if (error?.error?.code === 'rate_limit_exceeded') {
+            errorType = 'RATE_LIMIT'
+            errorMessage = 'API 호출 속도 제한에 도달했습니다. 잠시 후 다시 시도해주세요.'
+          } else if (error?.error?.type === 'invalid_request_error') {
+            errorType = 'INVALID_REQUEST'
+            errorMessage = `잘못된 요청입니다: ${error?.error?.message || '요청 형식을 확인해주세요.'}`
+          } else if (error?.code === 'ENOTFOUND' || error?.code === 'ECONNREFUSED') {
+            errorType = 'NETWORK_ERROR'
+            errorMessage = '네트워크 연결 오류입니다. 인터넷 연결을 확인해주세요.'
+          } else if (error?.response?.status === 401) {
+            errorType = 'AUTH_ERROR'
+            errorMessage = 'GPT API 인증 실패. API 키를 확인해주세요.'
+          } else if (error?.response?.status === 429) {
+            errorType = 'RATE_LIMIT'
+            errorMessage = 'API 요청 한도 초과. 잠시 후 다시 시도해주세요.'
+          } else if (error?.response?.status === 500) {
+            errorType = 'SERVER_ERROR'
+            errorMessage = 'OpenAI 서버 오류입니다. 잠시 후 다시 시도해주세요.'
+          } else if (error?.response?.status === 503) {
+            errorType = 'SERVICE_UNAVAILABLE'
+            errorMessage = 'OpenAI 서비스를 일시적으로 사용할 수 없습니다.'
+          } else {
+            errorMessage = error?.message || error?.toString() || '알 수 없는 오류가 발생했습니다.'
+          }
+          
           console.error(`❌ Error analyzing item ${item.sequenceNumber}:`)
-          console.error(`   - Error Type: ${error?.name || 'Unknown'}`)
+          console.error(`   - Error Type: ${errorType}`)
           console.error(`   - Error Message: ${errorMessage}`)
+          console.error(`   - Original Error:`, error)
           console.error(`   - Stack Trace:`, error?.stack)
           
           // 오류 상세 정보 저장
           status[item.sequenceNumber] = {
             status: 'error',
+            errorType: errorType,
             message: errorMessage,
-            item: item.item || item.question
+            item: item.item || item.question,
+            details: {
+              statusCode: error?.response?.status,
+              apiErrorCode: error?.error?.code,
+              apiErrorMessage: error?.error?.message
+            }
           }
         }
       }

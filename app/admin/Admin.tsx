@@ -2971,15 +2971,92 @@ export default function AdminDashboard() {
                         }
                       } else {
                         const error = await res.json();
-                        addLog(`✗ 오류 발생: ${error.error || 'AI 분석에 실패했습니다'}`);
-                        setError(error.error || 'AI 분석에 실패했습니다');
+                        
+                        // 오류 상세 정보 로그
+                        addLog('═══════════════════════════════════════');
+                        addLog('❌ AI 분석 실패 - 상세 오류 정보');
+                        addLog('═══════════════════════════════════════');
+                        
+                        if (error.status) {
+                          // 각 항목별 오류 확인
+                          Object.entries(error.status).forEach(([key, value]: [string, any]) => {
+                            if (value.status === 'error') {
+                              addLog(`📍 항목 ${key}: ${value.item}`);
+                              addLog(`   ⚠️ 오류 유형: ${value.errorType || 'UNKNOWN'}`);
+                              addLog(`   💬 오류 메시지: ${value.message}`);
+                              if (value.details) {
+                                if (value.details.statusCode) {
+                                  addLog(`   📡 HTTP 상태 코드: ${value.details.statusCode}`);
+                                }
+                                if (value.details.apiErrorCode) {
+                                  addLog(`   🔑 API 오류 코드: ${value.details.apiErrorCode}`);
+                                }
+                                if (value.details.apiErrorMessage) {
+                                  addLog(`   📝 API 오류 메시지: ${value.details.apiErrorMessage}`);
+                                }
+                              }
+                              addLog('───────────────────────────────────────');
+                            }
+                          });
+                        } else {
+                          addLog(`✗ 일반 오류: ${error.error || 'AI 분석에 실패했습니다'}`);
+                        }
+                        
+                        addLog('═══════════════════════════════════════');
+                        addLog('💡 해결 방법:');
+                        
+                        // 오류 유형에 따른 해결책 제시
+                        const hasApiKeyError = error.status && Object.values(error.status).some((v: any) => 
+                          v.errorType === 'INVALID_API_KEY' || v.errorType === 'AUTH_ERROR'
+                        );
+                        const hasQuotaError = error.status && Object.values(error.status).some((v: any) => 
+                          v.errorType === 'QUOTA_EXCEEDED'
+                        );
+                        const hasRateLimitError = error.status && Object.values(error.status).some((v: any) => 
+                          v.errorType === 'RATE_LIMIT'
+                        );
+                        const hasNetworkError = error.status && Object.values(error.status).some((v: any) => 
+                          v.errorType === 'NETWORK_ERROR'
+                        );
+                        
+                        if (hasApiKeyError) {
+                          addLog('   1. GPT 설정에서 올바른 API 키를 입력하세요');
+                          addLog('   2. OpenAI 계정에서 API 키를 재발급 받으세요');
+                        } else if (hasQuotaError) {
+                          addLog('   1. OpenAI 계정의 결제 정보를 확인하세요');
+                          addLog('   2. API 사용 한도를 늘리거나 결제 수단을 등록하세요');
+                        } else if (hasRateLimitError) {
+                          addLog('   1. 1-2분 후에 다시 시도하세요');
+                          addLog('   2. API 호출 간격을 늘려주세요');
+                        } else if (hasNetworkError) {
+                          addLog('   1. 인터넷 연결 상태를 확인하세요');
+                          addLog('   2. 방화벽이나 프록시 설정을 확인하세요');
+                        } else {
+                          addLog('   1. 잠시 후 다시 시도하세요');
+                          addLog('   2. 문제가 지속되면 시스템 관리자에게 문의하세요');
+                        }
+                        addLog('═══════════════════════════════════════');
+                        
+                        setError(error.error || 'AI 분석에 실패했습니다. 상세 로그를 확인하세요.');
                         setAnalysisCompleted(true);
                       }
                     } catch (err) {
                       clearInterval(progressInterval);
                       console.error('AI 분석 오류:', err);
-                      addLog(`✗ 오류 발생: ${err instanceof Error ? err.message : 'AI 분석 중 오류가 발생했습니다'}`);
-                      setError('AI 분석 중 오류가 발생했습니다');
+                      
+                      addLog('═══════════════════════════════════════');
+                      addLog('❌ 예기치 않은 오류 발생');
+                      addLog('═══════════════════════════════════════');
+                      addLog(`✗ 오류 메시지: ${err instanceof Error ? err.message : '알 수 없는 오류'}`);
+                      if (err instanceof Error && err.stack) {
+                        addLog('📋 스택 추적:');
+                        err.stack.split('\n').slice(0, 5).forEach(line => {
+                          addLog(`   ${line}`);
+                        });
+                      }
+                      addLog('═══════════════════════════════════════');
+                      
+                      setError('AI 분석 중 오류가 발생했습니다. 상세 로그를 확인하세요.');
                       setAnalysisCompleted(true);
                     } finally {
                       setIsAnalyzing(false);
