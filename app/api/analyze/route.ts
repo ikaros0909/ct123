@@ -70,13 +70,13 @@ export async function POST(request: NextRequest) {
       let apiKey: string | null = null
       
       try {
-        // DB에서 GPT 설정 조회
-        const gptSettings = await prisma.gPTSettings.findFirst({
-          orderBy: { updatedAt: 'desc' }
+        // DB에서 GPT 설정 조회 (SystemSetting 테이블)
+        const gptSettings = await prisma.systemSetting.findFirst({
+          where: { key: 'OPENAI_API_KEY' }
         })
         
-        if (gptSettings?.apiKey) {
-          apiKey = gptSettings.apiKey
+        if (gptSettings?.value) {
+          apiKey = gptSettings.value
           console.log('[Analyze API] Using API key from database')
         }
       } catch (error) {
@@ -96,6 +96,8 @@ export async function POST(request: NextRequest) {
       
       if (!openai) {
         console.warn('[Analyze API] No OpenAI API key available, using dummy data')
+      } else {
+        console.log('[Analyze API] OpenAI client initialized successfully')
       }
 
 
