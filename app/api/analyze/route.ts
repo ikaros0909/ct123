@@ -9,12 +9,36 @@ const openai = process.env.OPENAI_API_KEY ? new OpenAI({
 }) : null
 
 // 한국 시간으로 날짜 변환 함수
-function toKoreanDate(dateString: string): Date {
-  // YYYY-MM-DD 형식의 문자열을 받아서 한국 시간 자정(00:00:00)으로 설정
-  const [year, month, day] = dateString.split('-').map(Number)
+function toKoreanDate(dateString: string): Date | null {
+  // 날짜 문자열 유효성 검사
+  if (!dateString || dateString === 'Invalid Date') {
+    return null
+  }
+  
+  const dateParts = dateString.split('-')
+  if (dateParts.length !== 3) {
+    return null
+  }
+  
+  const [year, month, day] = dateParts.map(Number)
+  
+  // 유효한 날짜인지 확인
+  if (isNaN(year) || isNaN(month) || isNaN(day) || 
+      year < 1900 || year > 2100 || 
+      month < 1 || month > 12 || 
+      day < 1 || day > 31) {
+    return null
+  }
+  
   // 한국 시간 자정 = UTC 기준 전날 15시 (한국이 UTC+9이므로)
   // 예: 2025-09-11 00:00:00 KST = 2025-09-10 15:00:00 UTC
   const koreanDate = new Date(Date.UTC(year, month - 1, day - 1, 15, 0, 0))
+  
+  // 생성된 Date 객체가 유효한지 확인
+  if (isNaN(koreanDate.getTime())) {
+    return null
+  }
+  
   return koreanDate
 }
 
@@ -23,12 +47,14 @@ export async function POST(request: NextRequest) {
     try {
       const { date, categories, items, selectionMode, companyId } = await req.json()
       
+      if (!date || !companyId) {
+        return NextResponse.json({ error: 'Date and companyId are required' }, { status: 400 })
+      }
       
       // 한국 시간 기준으로 날짜 처리
       const koreanDate = toKoreanDate(date)
-      
-      if (!date || !companyId) {
-        return NextResponse.json({ error: 'Date and companyId are required' }, { status: 400 })
+      if (!koreanDate) {
+        return NextResponse.json({ error: 'Invalid date format. Use YYYY-MM-DD format.' }, { status: 400 })
       }
 
       // 회사 정보 및 시스템 프롬프트 가져오기

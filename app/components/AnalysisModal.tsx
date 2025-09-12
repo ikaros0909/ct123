@@ -68,25 +68,30 @@ export default function AnalysisModal({
                 padding: '1.5rem',
                 backgroundColor: '#fef3c7',
                 border: '1px solid #fcd34d',
-                borderRadius: '0.5rem',
+                borderRadius: '0.75rem',
                 marginBottom: '1.5rem'
               }}>
-                <h3 style={{ fontWeight: '600', marginBottom: '0.5rem', color: '#92400e' }}>
-                  🔍 AI 분석을 실행하시겠습니까?
-                </h3>
-                <div style={{ fontSize: '0.875rem', color: '#78350f', lineHeight: '1.5' }}>
-                  <p style={{ marginBottom: '0.5rem' }}>
-                    • 선택한 날짜: <strong>{selectedDate}</strong>
-                  </p>
-                  <p style={{ marginBottom: '0.5rem' }}>
-                    • 분석 대상: <strong>{companyName}</strong>
-                  </p>
-                  <p style={{ marginBottom: '0.5rem' }}>
-                    • 총 항목 수: <strong>{itemCount}개</strong>
-                  </p>
-                  <p style={{ color: '#dc2626', fontWeight: '500' }}>
-                    ⚠️ 분석에는 약 3-5분이 소요됩니다.
-                  </p>
+                <div style={{ 
+                  display: 'flex',
+                  gap: '1rem',
+                  alignItems: 'flex-start'
+                }}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, marginTop: '2px' }}>
+                    <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" 
+                      stroke="#d97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <div>
+                    <h3 style={{ margin: '0 0 0.5rem 0', color: '#92400e', fontSize: '1rem', fontWeight: '600' }}>
+                      AI 분석을 실행하시겠습니까?
+                    </h3>
+                    <p style={{ margin: '0 0 0.5rem 0', color: '#78350f', fontSize: '0.875rem' }}>
+                      선택한 날짜: <strong>{selectedDate ? selectedDate.split('T')[0] : '날짜 미선택'}</strong>
+                    </p>
+                    <p style={{ margin: 0, color: '#78350f', fontSize: '0.875rem' }}>
+                      {itemCount}개의 분석 항목에 대해 AI 분석이 실행됩니다.
+                      기존 분석 데이터가 있다면 덮어쓰여집니다.
+                    </p>
+                  </div>
                 </div>
               </div>
             </>
@@ -168,18 +173,34 @@ export default function AnalysisModal({
         
         {/* Footer */}
         {!isAnalyzing && !analysisCompleted && (
-          <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-end gap-3">
+          <div style={{
+            padding: '1.5rem',
+            borderTop: '1px solid #e5e7eb',
+            backgroundColor: '#f9fafb',
+            display: 'flex',
+            justifyContent: 'flex-end',
+            gap: '0.75rem'
+          }}>
             <button
               onClick={onClose}
               style={{
-                padding: '0.5rem 1.5rem',
-                borderRadius: '0.375rem',
+                padding: '0.625rem 1.5rem',
+                borderRadius: '0.5rem',
                 border: '1px solid #d1d5db',
                 backgroundColor: 'white',
                 color: '#374151',
                 cursor: 'pointer',
-                fontSize: '0.875rem',
-                fontWeight: '500'
+                fontSize: '0.95rem',
+                fontWeight: '500',
+                transition: 'all 0.2s'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.backgroundColor = '#f3f4f6';
+                e.currentTarget.style.borderColor = '#9ca3af';
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.backgroundColor = 'white';
+                e.currentTarget.style.borderColor = '#d1d5db';
               }}
             >
               취소
@@ -187,15 +208,18 @@ export default function AnalysisModal({
             <button
               onClick={onConfirm}
               style={{
-                padding: '0.5rem 1.5rem',
-                borderRadius: '0.375rem',
+                padding: '0.625rem 1.5rem',
+                borderRadius: '0.5rem',
                 border: 'none',
                 backgroundColor: '#3b82f6',
                 color: 'white',
                 cursor: 'pointer',
-                fontSize: '0.875rem',
-                fontWeight: '500'
+                fontSize: '0.95rem',
+                fontWeight: '500',
+                transition: 'background-color 0.2s'
               }}
+              onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#2563eb'}
+              onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#3b82f6'}
             >
               분석 시작
             </button>

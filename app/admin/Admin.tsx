@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import ExcelUpload from '../components/ExcelUpload'
 import { FileSpreadsheet } from 'lucide-react'
@@ -196,17 +196,6 @@ export default function AdminDashboard() {
   const router = useRouter()
   const pathname = usePathname()
   
-  // 한국 시간 기준 오늘 날짜를 상수로 계산
-  const getKoreanDate = () => {
-    const now = new Date()
-    const kstOffset = now.getTimezoneOffset() * 60000 + (9 * 60 * 60 * 1000)
-    const kstDate = new Date(now.getTime() + kstOffset)
-    return kstDate.getFullYear() + '-' + 
-           String(kstDate.getMonth() + 1).padStart(2, '0') + '-' + 
-           String(kstDate.getDate()).padStart(2, '0')
-  }
-  const TODAY_KST = getKoreanDate()
-  
   const [companies, setCompanies] = useState<Company[]>([])
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null)
   const [showExcelUpload, setShowExcelUpload] = useState(false)
@@ -224,8 +213,8 @@ export default function AdminDashboard() {
   const [selectedCategory, setSelectedCategory] = useState<string>('')
   const [user, setUser] = useState<any>(null)
   const [activeTab, setActiveTab] = useState<'items' | 'results'>('items')
-  const [selectedDate, setSelectedDate] = useState<string>(TODAY_KST)
-  const [analysisDate, setAnalysisDate] = useState<string>(TODAY_KST)
+  const [selectedDate, setSelectedDate] = useState<string>('')
+  const [analysisDate, setAnalysisDate] = useState<string>('')
   const [reports, setReports] = useState<Report[]>([])
   const [selectedReportType, setSelectedReportType] = useState<'NOW' | 'INSIGHT' | 'ALL'>('ALL')
   const [draggedCompany, setDraggedCompany] = useState<Company | null>(null)
@@ -244,6 +233,8 @@ export default function AdminDashboard() {
     confirmPassword: ''
   })
   const [showAnalysisConfirmModal, setShowAnalysisConfirmModal] = useState(false)
+  const [showDateAlertModal, setShowDateAlertModal] = useState(false)
+  const dateInputRef = useRef<HTMLInputElement>(null)
   const [showGPTModal, setShowGPTModal] = useState(false)
   const [gptApiKey, setGptApiKey] = useState('')
   const [showDeleteCategoryModal, setShowDeleteCategoryModal] = useState(false)
@@ -303,6 +294,10 @@ export default function AdminDashboard() {
     if (userData) {
       setUser(JSON.parse(userData))
     }
+    
+    // 날짜 초기화 (자동 선택 방지)
+    setAnalysisDate('')
+    setSelectedDate('')
 
     fetch('/api/auth/me', {
       headers: {
@@ -333,28 +328,6 @@ export default function AdminDashboard() {
     }
   }, [selectedCompany, analysisDate])
 
-  // 최신 분석 날짜 가져오기
-  const getLatestAnalysisDate = async (companyId: string) => {
-    try {
-      const token = localStorage.getItem('token')
-      const response = await fetch(`/api/analysis-data?companyId=${companyId}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-      
-      if (response.ok) {
-        const data = await response.json()
-        if (data.length > 0) {
-          // 날짜별로 정렬하여 가장 최근 날짜 반환
-          const sortedData = data.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())
-          const latestDate = sortedData[0].date
-          return latestDate
-        }
-      }
-    } catch (error) {
-      console.error('최신 분석 날짜 조회 실패:', error)
-    }
-    return null // 분석 데이터가 없으면 null 반환
-  }
 
   // GPT 설정 로드
   const loadGPTSettings = async () => {
@@ -1298,21 +1271,9 @@ export default function AdminDashboard() {
                 </button>
                 <button 
                   className={`${styles.tabButton} ${activeTab === 'results' ? styles.active : ''}`}
-                  onClick={async () => {
+                  onClick={() => {
                     setActiveTab('results')
-                    // 분석결과 탭 클릭 시 최신 분석 날짜로 필터 설정
-                    if (selectedCompany) {
-                      const latestDate = await getLatestAnalysisDate(selectedCompany.id)
-                      if (latestDate) {
-                        setSelectedDate(latestDate)
-                        setAnalysisDate(latestDate)
-                      } else {
-                        // 분석 데이터가 없으면 오늘 날짜 유지
-                        // selectedDate는 비우지만 analysisDate는 오늘 날짜 유지
-                        setSelectedDate('')
-                        // analysisDate는 변경하지 않음 (초기값 유지)
-                      }
-                    }
+                    // 날짜 자동 선택 제거 - 사용자가 직접 선택하도록 함
                   }}
                 >
                   <Icons.TrendUp />
@@ -1593,20 +1554,23 @@ export default function AdminDashboard() {
                     <div className={styles.dateSelector}>
                       <Icons.Calendar />
                       <input
+                        ref={dateInputRef}
                         type="date"
-                        value={analysisDate || TODAY_KST}
+                        value={analysisDate || ''}
                         onChange={(e) => setAnalysisDate(e.target.value)}
+                        placeholder="날짜 선택"
                       />
                     </div>
                     <span style={{ marginLeft: '1rem', color: '#666', fontSize: '0.875rem' }}>
-                      분석할 날짜를 선택하세요
+                      {analysisDate ? `선택된 날짜: ${analysisDate.split('T')[0]}` : '분석할 날짜를 선택하세요'}
                     </span>
                   </div>
                   <button 
                     className={styles.analyzeBtn}
                     onClick={() => {
+                      // 날짜가 선택되지 않았으면 알림 모달 표시
                       if (!analysisDate) {
-                        setError('분석할 날짜를 선택해주세요');
+                        setShowDateAlertModal(true);
                         return;
                       }
                       setAnalysisCompleted(false);
@@ -1616,20 +1580,20 @@ export default function AdminDashboard() {
                       setAnalysisStatus({});
                       setShowAnalysisConfirmModal(true);
                     }}
-                    disabled={isAnalyzing || !analysisDate}
+                    disabled={isAnalyzing}
                     style={{ 
                       backgroundColor: '#3b82f6',
                       color: 'white',
                       padding: '0.75rem 1.5rem',
                       borderRadius: '0.5rem',
                       border: 'none',
-                      cursor: isAnalyzing || !analysisDate ? 'not-allowed' : 'pointer',
+                      cursor: isAnalyzing ? 'not-allowed' : 'pointer',
                       fontSize: '1rem',
                       fontWeight: '500',
                       display: 'flex',
                       alignItems: 'center',
                       gap: '0.5rem',
-                      opacity: isAnalyzing || !analysisDate ? 0.5 : 1
+                      opacity: isAnalyzing ? 0.5 : 1
                     }}
                   >
                     <Icons.TrendUp />
@@ -2511,6 +2475,91 @@ export default function AdminDashboard() {
         </div>
       )}
 
+      {/* 날짜 미선택 알림 모달 */}
+      {showDateAlertModal && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modal} style={{ 
+            maxWidth: '450px',
+            padding: '2rem',
+            borderRadius: '12px',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+          }}>
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              textAlign: 'center'
+            }}>
+              {/* 경고 아이콘 */}
+              <div style={{
+                width: '64px',
+                height: '64px',
+                borderRadius: '50%',
+                backgroundColor: '#fef3c7',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '1.5rem'
+              }}>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" 
+                    stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+              
+              {/* 제목 */}
+              <h2 style={{
+                fontSize: '1.25rem',
+                fontWeight: '600',
+                color: '#111827',
+                marginBottom: '0.75rem'
+              }}>
+                날짜를 선택해주세요
+              </h2>
+              
+              {/* 설명 */}
+              <p style={{
+                fontSize: '0.95rem',
+                color: '#6b7280',
+                marginBottom: '1.5rem',
+                lineHeight: '1.5'
+              }}>
+                AI 분석을 실행하려면 먼저 분석할 날짜를 선택해야 합니다.
+                날짜를 선택한 후 다시 시도해주세요.
+              </p>
+              
+              {/* 확인 버튼 */}
+              <button
+                onClick={() => {
+                  setShowDateAlertModal(false);
+                  // 날짜 입력 필드에 포커스
+                  setTimeout(() => {
+                    dateInputRef.current?.focus();
+                    dateInputRef.current?.showPicker?.();
+                  }, 100);
+                }}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem 1.5rem',
+                  backgroundColor: '#3b82f6',
+                  color: 'white',
+                  borderRadius: '8px',
+                  border: 'none',
+                  fontSize: '1rem',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#2563eb'}
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#3b82f6'}
+              >
+                확인
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* AI 분석 확인 모달 */}
       {showAnalysisConfirmModal && (
         <div className={styles.modalOverlay}>
@@ -2570,7 +2619,7 @@ export default function AdminDashboard() {
                           AI 분석을 실행하시겠습니까?
                         </h3>
                         <p style={{ margin: '0 0 0.5rem 0', color: '#78350f', fontSize: '0.875rem' }}>
-                          선택한 날짜: <strong>{analysisDate}</strong>
+                          선택한 날짜: <strong>{analysisDate ? analysisDate.split('T')[0] : '날짜 미선택'}</strong>
                         </p>
                         <p style={{ margin: 0, color: '#78350f', fontSize: '0.875rem' }}>
                           {mainData.length}개의 분석 항목에 대해 AI 분석이 실행됩니다.
