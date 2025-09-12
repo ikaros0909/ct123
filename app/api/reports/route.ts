@@ -40,20 +40,42 @@ function toKoreanDate(dateString: string): Date | null {
 
 export async function GET(request: NextRequest) {
   try {
+    // 디버깅을 위한 로그
+    console.log('[Reports API] Request received')
+    
     const searchParams = request.nextUrl.searchParams
     const companyId = searchParams.get('companyId')
     const date = searchParams.get('date')
     const type = searchParams.get('type')
+    
+    console.log('[Reports API] Parameters:', { companyId, date, type })
 
-    if (!companyId || !date) {
-      return NextResponse.json({ error: 'Company ID and date are required' }, { status: 400 })
+    if (!companyId) {
+      console.error('[Reports API] Missing companyId')
+      return NextResponse.json({ 
+        error: 'Company ID is required',
+        details: 'companyId parameter is missing from the request' 
+      }, { status: 400 })
+    }
+
+    // date가 없으면 빈 배열 반환 (필수가 아님)
+    if (!date) {
+      console.log('[Reports API] No date provided, returning empty array')
+      return NextResponse.json([])
     }
 
     // 날짜 변환
     const koreanDate = toKoreanDate(date)
     if (!koreanDate) {
-      return NextResponse.json({ error: 'Invalid date format. Use YYYY-MM-DD format.' }, { status: 400 })
+      console.error('[Reports API] Invalid date format:', date)
+      return NextResponse.json({ 
+        error: 'Invalid date format',
+        details: `Date "${date}" is not valid. Use YYYY-MM-DD format.`,
+        receivedDate: date
+      }, { status: 400 })
     }
+    
+    console.log('[Reports API] Converted to Korean date:', koreanDate)
 
     // Build query conditions with Korean timezone
     const where: any = {
@@ -66,16 +88,44 @@ export async function GET(request: NextRequest) {
       where.type = type
     }
 
+    // 데이터베이스 연결 확인
+    try {
+      console.log('[Reports API] Checking database connection...')
+      await prisma.$connect()
+      console.log('[Reports API] Database connected successfully')
+    } catch (dbError) {
+      console.error('[Reports API] Database connection error:', dbError)
+      return NextResponse.json({ 
+        error: 'Database connection failed',
+        details: dbError instanceof Error ? dbError.message : 'Cannot connect to database',
+        hint: 'Check DATABASE_URL environment variable'
+      }, { status: 500 })
+    }
+
     // Fetch reports from database
-    const reports = await prisma.report.findMany({
-      where,
-      orderBy: {
-        createdAt: 'desc'
-      }
-    })
+    console.log('[Reports API] Fetching reports with where clause:', where)
+    
+    let reports
+    try {
+      reports = await prisma.report.findMany({
+        where,
+        orderBy: {
+          createdAt: 'desc'
+        }
+      })
+      console.log(`[Reports API] Found ${reports?.length || 0} reports`)
+    } catch (queryError) {
+      console.error('[Reports API] Query error:', queryError)
+      return NextResponse.json({ 
+        error: 'Database query failed',
+        details: queryError instanceof Error ? queryError.message : 'Query execution failed',
+        where: where
+      }, { status: 500 })
+    }
 
     // If no reports found, return empty array
     if (!reports || reports.length === 0) {
+      console.log('[Reports API] No reports found, returning empty array')
       return NextResponse.json([])
     }
 
@@ -91,13 +141,25 @@ export async function GET(request: NextRequest) {
       updatedAt: report.updatedAt
     }))
 
+    console.log('[Reports API] Returning transformed reports')
     return NextResponse.json(transformedReports)
 
   } catch (error) {
-    console.error('Error fetching reports:', error)
+    console.error('[Reports API] Unexpected error:', error)
+    
+    // 더 자세한 오류 정보 제공
+    if (error instanceof Error) {
+      return NextResponse.json({ 
+        error: 'Internal server error',
+        message: error.message,
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+        type: error.name
+      }, { status: 500 })
+    }
+    
     return NextResponse.json({ 
-      error: 'Failed to fetch reports',
-      details: error instanceof Error ? error.message : 'Unknown error'
+      error: 'Unknown error occurred',
+      details: 'An unexpected error occurred while processing the request'
     }, { status: 500 })
   }
 }
