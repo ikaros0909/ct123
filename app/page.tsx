@@ -7,6 +7,7 @@ import { useI18n } from './context/I18nProvider'
 import AuthModal from './components/AuthModal'
 import ErrorDetailModal from './components/ErrorDetailModal'
 import AnalysisModal from './components/AnalysisModal'
+import Footer from '../src/components/user/Footer'
 import api from './services/api'
 
 interface SamsungMainData {
@@ -560,7 +561,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="flex-1 bg-gray-50">
       {/* Header */}
       <header className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -1070,15 +1071,10 @@ export default function Home() {
 
 
 
-        {/* Copyright Footer */}
-        <div className="mt-8 py-6 border-t border-gray-200">
-          <div className="text-center text-sm text-gray-500">
-            <p>&copy; 2025 {lang === 'ko' ? 'AI 기업 경쟁력 진단' : 'AI Corporate Competitiveness Diagnosis'}. {lang === 'ko' ? '모든 권리 보유' : 'All rights reserved'}.</p>
-            <p className="mt-1">{lang === 'ko' ? '고급 AI 분석 기술 제공' : 'Powered by Advanced AI Analysis Technology'}</p>
-          </div>
-        </div>
-
       </main>
+
+      {/* Footer Component */}
+      <Footer />
 
       {/* AI Analysis Confirmation Modal */}
       <AnalysisModal
