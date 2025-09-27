@@ -174,14 +174,15 @@ export default function Home() {
 
   const loadData = async () => {
     if (!selectedCompany) return
-    
+
+    setLoading(true)
     try {
       // 선택된 기업의 데이터 로드
       const [mainDataResponse, analysisDataResponse] = await Promise.all([
         api.getSamsungMain(selectedCompany.id),
         api.getSamsungAnalysis(selectedCompany.id)
       ])
-      
+
       // DB 필드를 한글 필드로 변환
       const transformedMainData = mainDataResponse.map((item: any) => ({
         id: item.id,
@@ -204,7 +205,7 @@ export default function Home() {
         index: item.index,
         source: item.source
       }))
-      
+
       // Analysis 데이터를 SamsungAnalysisData 형태로 변환
       const transformedAnalysisData = analysisDataResponse.map((item: any) => ({
         날짜: item.date ? new Date(item.date).toISOString().split('T')[0] : '',
@@ -216,12 +217,14 @@ export default function Home() {
         // 원본 데이터도 보관
         ...item
       }))
-      
-      
+
+
       setMainData(transformedMainData)
       setAnalysisData(transformedAnalysisData)
     } catch (error) {
       console.error('데이터 로드 실패:', error)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -801,17 +804,24 @@ export default function Home() {
           <div className="card p-3 sm:p-6">
             <>
               <div className="text-xs sm:text-sm font-semibold text-gray-900 mb-2">{t('CompositeIndexTrend')} : As of 10:00, {fmtMDY}</div>
-              {simplePoints.length > 0 ? (
+              {loading ? (
+                <div className="flex items-center justify-center h-[250px] sm:h-[300px]">
+                  <div className="text-center">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-3" />
+                    <p className="text-xs sm:text-sm text-gray-600">{lang === 'ko' ? '데이터 로딩 중...' : 'Loading data...'}</p>
+                  </div>
+                </div>
+              ) : simplePoints.length > 0 ? (
                 <ResponsiveContainer width="100%" height={250} className="sm:h-[300px]">
                   <LineChart data={simplePoints}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="label" />
                     <YAxis domain={[-3, 3]} />
                     <Tooltip />
-                    <Line 
-                      type="monotone" 
-                      dataKey="value" 
-                      stroke="#0ea5e9" 
+                    <Line
+                      type="monotone"
+                      dataKey="value"
+                      stroke="#0ea5e9"
                       strokeWidth={3}
                       dot={{ fill: '#0ea5e9', strokeWidth: 2, r: 4 }}
                     />
@@ -837,7 +847,14 @@ export default function Home() {
         {/* Insight, Now report (below chart) */}
         <div className="mb-8">
           <div className="card p-3 sm:p-6">
-            {insightReport || nowReport ? (
+            {loading ? (
+              <div className="flex items-center justify-center py-12 sm:py-16">
+                <div className="text-center">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-3" />
+                  <p className="text-xs sm:text-sm text-gray-600">{lang === 'ko' ? '데이터 로딩 중...' : 'Loading data...'}</p>
+                </div>
+              </div>
+            ) : insightReport || nowReport ? (
               <div className="space-y-6">
                 {insightReport && (
                   <div>
@@ -878,6 +895,14 @@ export default function Home() {
                 {t('SubIndexTrend')} : As of 10:00, {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
               </h3>
             </div>
+            {loading ? (
+              <div className="flex items-center justify-center py-16 sm:py-20">
+                <div className="text-center">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-3" />
+                  <p className="text-xs sm:text-sm text-gray-600">{lang === 'ko' ? '데이터 로딩 중...' : 'Loading data...'}</p>
+                </div>
+              </div>
+            ) : (
             <div className="overflow-x-auto -mx-3 sm:mx-0">
               <table className="min-w-full text-xs sm:text-sm">
                 <thead className="bg-gray-50">
@@ -1007,6 +1032,7 @@ export default function Home() {
                   </svg>
                 </button>
               </div>
+            )}
             )}
           </div>
         </div>
