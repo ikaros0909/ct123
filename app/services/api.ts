@@ -94,7 +94,12 @@ class ApiService {
   // Main data endpoints
   async getMainData(companyId?: string) {
     const params = companyId ? `?companyId=${companyId}` : ''
-    return this.request(`/api/main-data${params}`)
+    try {
+      return await this.request(`/api/main-data${params}`)
+    } catch (error) {
+      console.error('Error loading main data:', error)
+      return []
+    }
   }
 
   async createMainData(data: any) {
@@ -110,7 +115,12 @@ class ApiService {
     if (companyId) params.append('companyId', companyId)
     if (date) params.append('date', date)
     const queryString = params.toString()
-    return this.request(`/api/analysis-data${queryString ? `?${queryString}` : ''}`)
+    try {
+      return await this.request(`/api/analysis-data${queryString ? `?${queryString}` : ''}`)
+    } catch (error) {
+      console.error('Error loading analysis data:', error)
+      return []
+    }
   }
 
   async createAnalysisData(data: any) {

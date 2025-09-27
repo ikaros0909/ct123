@@ -1247,28 +1247,459 @@
   font-size: 0.9rem;
 }
 
-/* 반응형 */
+/* 반응형 - 모바일 최적화 */
 @media (max-width: 768px) {
+  /* 헤더 모바일 최적화 */
+  .header {
+    padding: 0.75rem 1rem;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .headerLeft {
+    flex: 1;
+    min-width: 0;
+    gap: 0.5rem;
+  }
+
+  .headerLeft nav {
+    margin-left: 0 !important;
+    gap: 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    width: 100%;
+  }
+
+  .headerLeft nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .headerLeft nav a {
+    padding: 0 12px !important;
+    font-size: 13px !important;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .headerLeft nav a svg {
+    width: 16px !important;
+    height: 16px !important;
+  }
+
+  .headerRight {
+    gap: 0.5rem;
+  }
+
+  .headerRight button {
+    padding: 6px 10px !important;
+    margin-right: 0 !important;
+    font-size: 12px !important;
+  }
+
+  .headerRight button span {
+    display: none;
+  }
+
+  .userMenuBtn {
+    padding: 4px 8px !important;
+    font-size: 12px !important;
+  }
+
+  .userMenuBtn span {
+    display: none;
+  }
+
+  .avatar {
+    width: 24px !important;
+    height: 24px !important;
+    font-size: 11px !important;
+  }
+
+  .userDropdown {
+    width: 240px;
+    right: -10px;
+  }
+
+  /* 메인 콘텐츠 모바일 최적화 */
+  .mainContent {
+    padding: 1rem;
+  }
+
+  /* 기업 그리드 모바일 최적화 */
   .companyGrid {
     grid-template-columns: 1fr;
+    gap: 1rem;
   }
-  
+
+  .companyCard {
+    padding: 16px;
+    flex-direction: column;
+    gap: 12px;
+    min-height: auto;
+  }
+
+  .iconWrapper {
+    width: 48px;
+    height: 48px;
+    font-size: 20px;
+  }
+
+  .cardMain h3 {
+    font-size: 16px;
+  }
+
+  .companyNameEn {
+    font-size: 12px;
+  }
+
+  .cardDescription {
+    font-size: 13px;
+  }
+
+  .cardMeta {
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .addCard {
+    min-height: 120px;
+    padding: 16px;
+  }
+
+  .addCardIcon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .addCardIcon svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .addCardText {
+    font-size: 15px;
+  }
+
+  .addCardHint {
+    font-size: 12px;
+  }
+
+  /* 서브 헤더 모바일 최적화 */
+  .subHeader {
+    padding: 12px 16px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .subHeaderLeft {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .backBtn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .companyTitle {
+    font-size: 1rem;
+  }
+
+  /* 탭 네비게이션 모바일 최적화 */
   .tabNav {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .tabNav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tabButton {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+
+  /* 툴바 모바일 최적화 */
+  .toolbar,
+  .analysisToolbar {
+    flex-direction: column;
+    gap: 0.75rem;
+    margin: 1rem;
+    padding: 1rem;
+  }
+
+  .toolbarLeft,
+  .toolbarRight,
+  .analysisLeft {
+    width: 100%;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .searchBox,
+  .dateSelector,
+  .dateFilter,
+  .categoryFilter {
+    width: 100%;
+  }
+
+  .analyzeBtn,
+  .addBtn {
+    width: 100%;
+    justify-content: center;
+    padding: 0.75rem 1rem;
+  }
+
+  /* 데이터 섹션 모바일 최적화 */
+  .dataSection {
+    margin: 0 1rem 1.5rem 1rem;
+  }
+
+  .dataSection h2 {
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  /* 테이블 모바일 최적화 */
+  .tableContainer {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
-  
-  .toolbar {
-    flex-direction: column;
-    gap: 1rem;
+
+  .table {
+    min-width: 800px;
   }
-  
-  .toolbarLeft {
+
+  .table th,
+  .table td {
+    padding: 0.6rem 0.75rem;
+    font-size: 0.8rem;
+  }
+
+  .table th {
+    font-size: 0.75rem;
+  }
+
+  .itemCell {
+    max-width: 200px;
+  }
+
+  /* 시스템 프롬프트 섹션 모바일 최적화 */
+  .systemPromptSection {
+    margin: 0 1rem 1.5rem 1rem;
+    padding: 1rem;
+  }
+
+  .sectionHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .sectionHeader h3 {
+    font-size: 1rem;
+  }
+
+  .editPromptBtn {
+    width: 100%;
+    padding: 0.5rem 1rem;
+  }
+
+  /* 모달 모바일 최적화 */
+  .modal {
+    width: 95%;
+    max-width: none;
+    max-height: 90vh;
+    margin: 0.5rem;
+  }
+
+  .modalHeader {
+    padding: 1rem;
+  }
+
+  .modalHeader h2 {
+    font-size: 1rem;
+  }
+
+  .modalBody {
+    padding: 1rem;
+  }
+
+  .modalFooter {
+    padding: 1rem;
+    flex-direction: column-reverse;
+    gap: 0.75rem;
+  }
+
+  .modalFooter button {
     width: 100%;
   }
-  
+
+  .formGroup label {
+    font-size: 0.85rem;
+  }
+
+  .formGroup input,
+  .formGroup textarea,
+  .formGroup select {
+    font-size: 0.85rem;
+    padding: 0.5rem;
+  }
+
+  .formRow {
+    grid-template-columns: 1fr;
+  }
+
+  /* 카테고리 카드 모바일 최적화 */
   .categoryCards {
     grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .categoryCard {
+    padding: 0.75rem;
+  }
+
+  .categoryHeader h3 {
+    font-size: 0.85rem;
+  }
+
+  .indexValue {
+    font-size: 0.9rem;
+  }
+
+  .statItem span {
+    font-size: 0.7rem;
+  }
+
+  .statItem strong {
+    font-size: 0.85rem;
+  }
+
+  /* 사용자 관리 모바일 최적화 */
+  .userManagement {
+    padding: 1rem;
+  }
+
+  .userHeader {
+    padding: 16px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .userHeader h2 {
+    font-size: 1.2rem;
+  }
+
+  .userHeader .addBtn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .userTable {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .userTable .table {
+    min-width: 700px;
+  }
+
+  .userTable th,
+  .userTable td {
+    padding: 12px;
+    font-size: 0.85rem;
+  }
+
+  .roleBadge {
+    font-size: 0.75rem;
+    padding: 4px 10px;
+  }
+
+  /* 토스트 알림 모바일 최적화 */
+  .errorToast,
+  .successToast {
+    bottom: 1rem;
+    right: 1rem;
+    left: 1rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  /* 빈 상태 모바일 최적화 */
+  .emptyState {
+    padding: 2rem 1rem;
+  }
+
+  .emptyState svg {
+    width: 48px;
+    height: 48px;
+  }
+
+  .emptyState h4 {
+    font-size: 1rem;
+  }
+
+  .emptyState p {
+    font-size: 0.85rem;
+  }
+
+  /* 액션 버튼 모바일 최적화 */
+  .cardActions {
+    opacity: 1;
+    top: 12px;
+    right: 12px;
+  }
+
+  .actionBtn {
+    width: 28px;
+    height: 28px;
+  }
+
+  .actionBtn svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+/* 더 작은 모바일 기기 (360px 이하) */
+@media (max-width: 360px) {
+  .header {
+    padding: 0.5rem;
+  }
+
+  .headerLeft nav a {
+    padding: 0 8px !important;
+    font-size: 12px !important;
+  }
+
+  .mainContent {
+    padding: 0.75rem;
+  }
+
+  .companyCard {
+    padding: 12px;
+  }
+
+  .toolbar,
+  .analysisToolbar {
+    padding: 0.75rem;
+  }
+
+  .modal {
+    width: 100%;
+    max-height: 95vh;
+    margin: 0;
+    border-radius: 12px 12px 0 0;
   }
 }
 

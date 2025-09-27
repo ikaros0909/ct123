@@ -338,9 +338,7 @@ export default function AdminDashboard() {
       })
       if (response.ok) {
         const data = await response.json()
-        if (data.apiKey) {
-          setGptApiKey(data.apiKey)
-        }
+        setGptApiKey(data.apiKey || '')
       }
     } catch (err) {
       console.error('GPT 설정 로드 실패:', err)
