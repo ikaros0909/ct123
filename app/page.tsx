@@ -903,6 +903,7 @@ export default function Home() {
                 </div>
               </div>
             ) : (
+            <div>
             <div className="overflow-x-auto -mx-3 sm:mx-0">
               <table className="min-w-full text-xs sm:text-sm">
                 <thead className="bg-gray-50">
