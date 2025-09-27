@@ -40,41 +40,39 @@ function toKoreanDate(dateString: string): Date | null {
 }
 
 export async function GET(request: NextRequest) {
-  return withAuth(request, async (req: AuthenticatedRequest) => {
-    try {
-      const { searchParams } = new URL(req.url)
-      const companyId = searchParams.get('companyId')
-      const date = searchParams.get('date')
-      
-      const where: any = {}
-      if (companyId) where.companyId = companyId
-      if (date) {
-        const koreanDate = toKoreanDate(date)
-        if (koreanDate) {
-          where.date = koreanDate
-        }
+  try {
+    const { searchParams } = new URL(request.url)
+    const companyId = searchParams.get('companyId')
+    const date = searchParams.get('date')
+
+    const where: any = {}
+    if (companyId) where.companyId = companyId
+    if (date) {
+      const koreanDate = toKoreanDate(date)
+      if (koreanDate) {
+        where.date = koreanDate
       }
-      
-      const analysisData = await prisma.analysis.findMany({
-        where,
-        include: {
-          company: true
-        },
-        orderBy: [
-          { date: 'desc' },
-          { sequenceNumber: 'asc' }
-        ]
-      })
-      
-      return NextResponse.json(analysisData)
-    } catch (error) {
-      console.error('Error fetching analysis data:', error)
-      return NextResponse.json(
-        { error: '분석 데이터를 가져오는 중 오류가 발생했습니다.' },
-        { status: 500 }
-      )
     }
-  })
+
+    const analysisData = await prisma.analysis.findMany({
+      where,
+      include: {
+        company: true
+      },
+      orderBy: [
+        { date: 'desc' },
+        { sequenceNumber: 'asc' }
+      ]
+    })
+
+    return NextResponse.json(analysisData)
+  } catch (error) {
+    console.error('Error fetching analysis data:', error)
+    return NextResponse.json(
+      { error: '분석 데이터를 가져오는 중 오류가 발생했습니다.' },
+      { status: 500 }
+    )
+  }
 }
 
 export async function POST(request: NextRequest) {
