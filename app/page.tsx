@@ -145,11 +145,14 @@ export default function Home() {
       const response = await fetch('/api/companies')
       if (response.ok) {
         const data = await response.json()
+        console.log('Loaded companies:', data.length, data)
         setCompanies(data)
         // 첫 번째 기업을 기본으로 선택
         if (data.length > 0 && !selectedCompany) {
           setSelectedCompany(data[0])
         }
+      } else {
+        console.error('Failed to load companies:', response.status, response.statusText)
       }
     } catch (error) {
       console.error('기업 목록 로드 실패:', error)
@@ -174,14 +177,18 @@ export default function Home() {
 
   const loadData = async () => {
     if (!selectedCompany) return
-    
+
+    setLoading(true)
     try {
       // 선택된 기업의 데이터 로드
       const [mainDataResponse, analysisDataResponse] = await Promise.all([
         api.getSamsungMain(selectedCompany.id),
         api.getSamsungAnalysis(selectedCompany.id)
       ])
-      
+
+      console.log('Main data loaded:', mainDataResponse.length, 'items')
+      console.log('Analysis data loaded:', analysisDataResponse.length, 'items')
+
       // DB 필드를 한글 필드로 변환
       const transformedMainData = mainDataResponse.map((item: any) => ({
         id: item.id,
@@ -202,9 +209,19 @@ export default function Home() {
         modifiedScale: item.modifiedScale,
         cumulativeScore: item.cumulativeScore,
         index: item.index,
-        source: item.source
+        source: item.source,
+        // 다국어 필드도 보관
+        itemEn: item.itemEn,
+        itemJa: item.itemJa,
+        itemZh: item.itemZh,
+        questionEn: item.questionEn,
+        questionJa: item.questionJa,
+        questionZh: item.questionZh,
+        categoryEn: item.categoryEn,
+        categoryJa: item.categoryJa,
+        categoryZh: item.categoryZh
       }))
-      
+
       // Analysis 데이터를 SamsungAnalysisData 형태로 변환
       const transformedAnalysisData = analysisDataResponse.map((item: any) => ({
         날짜: item.date ? new Date(item.date).toISOString().split('T')[0] : '',
@@ -216,12 +233,15 @@ export default function Home() {
         // 원본 데이터도 보관
         ...item
       }))
-      
-      
+
+
       setMainData(transformedMainData)
       setAnalysisData(transformedAnalysisData)
+      console.log('Data state updated successfully')
     } catch (error) {
       console.error('데이터 로드 실패:', error)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -463,23 +483,39 @@ export default function Home() {
   }
   
   // Get translated analysis item text from database
-  const getTranslatedAnalysisItem = (item: SamsungMainData): string => {
+  const getTranslatedAnalysisItem = (item: any): string => {
+    const base = item.AI_H지수_프롬프터 || item.item || item.question || ''
+
     if (lang === 'ko') {
-      return item.AI_H지수_프롬프터 || item.item || item.question || ''
+      return base
+    } else if (lang === 'en') {
+      return item.itemEn || item.questionEn || base
+    } else if (lang === 'ja') {
+      // 일본어가 없으면 한국어로만 폴백 (영어 건너뜀)
+      return item.itemJa || item.questionJa || base
+    } else if (lang === 'zh') {
+      // 중국어가 없으면 한국어로만 폴백 (영어 건너뜀)
+      return item.itemZh || item.questionZh || base
     }
-    
-    // For English, use the English fields if available, otherwise fallback to Korean
-    return item.itemEn || item.questionEn || item.AI_H지수_프롬프터 || item.item || item.question || ''
+    return base
   }
-  
-  // Get translated category from database  
-  const getTranslatedCategory = (item: SamsungMainData): string => {
+
+  // Get translated category from database
+  const getTranslatedCategory = (item: any): string => {
+    const base = item.구분 || item.category || ''
+
     if (lang === 'ko') {
-      return item.구분 || item.category || ''
+      return base
+    } else if (lang === 'en') {
+      return item.categoryEn || translateCategory(base)
+    } else if (lang === 'ja') {
+      // 일본어가 없으면 한국어로만 폴백
+      return item.categoryJa || base
+    } else if (lang === 'zh') {
+      // 중국어가 없으면 한국어로만 폴백
+      return item.categoryZh || base
     }
-    
-    // For English, use the English category if available, otherwise fallback to translated category
-    return item.categoryEn || translateCategory(item.구분 || item.category || '')
+    return base
   }
 
   const groupedByCategory = mainData.reduce((acc: Record<string, SamsungMainData[]>, item) => {
@@ -579,24 +615,44 @@ export default function Home() {
               {/* 언어 선택 */}
               <div className="flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
                 <button
-                  onClick={() => setLang('en')}
-                  className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
-                    lang === 'en' 
-                      ? 'bg-white text-gray-900 shadow-sm' 
+                  onClick={() => setLang('ko')}
+                  className={`px-2.5 py-1.5 rounded text-sm font-medium transition-colors ${
+                    lang === 'ko'
+                      ? 'bg-white text-gray-900 shadow-sm'
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
-                  EN
+                  한국어
                 </button>
                 <button
-                  onClick={() => setLang('ko')}
-                  className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
-                    lang === 'ko' 
-                      ? 'bg-white text-gray-900 shadow-sm' 
+                  onClick={() => setLang('en')}
+                  className={`px-2.5 py-1.5 rounded text-sm font-medium transition-colors ${
+                    lang === 'en'
+                      ? 'bg-white text-gray-900 shadow-sm'
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
-                  KR
+                  English
+                </button>
+                <button
+                  onClick={() => setLang('ja')}
+                  className={`px-2.5 py-1.5 rounded text-sm font-medium transition-colors ${
+                    lang === 'ja'
+                      ? 'bg-white text-gray-900 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  日本語
+                </button>
+                <button
+                  onClick={() => setLang('zh')}
+                  className={`px-2.5 py-1.5 rounded text-sm font-medium transition-colors ${
+                    lang === 'zh'
+                      ? 'bg-white text-gray-900 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  中文
                 </button>
               </div>
               
@@ -802,17 +858,24 @@ export default function Home() {
           <div className="card p-6">
             <>
               <div className="text-sm font-semibold text-gray-900 mb-2">{t('CompositeIndexTrend')} : As of 10:00, {fmtMDY}</div>
-              {simplePoints.length > 0 ? (
+              {loading ? (
+                <div className="flex items-center justify-center h-[300px]">
+                  <div className="text-center">
+                    <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+                    <p className="text-sm text-gray-600">{lang === 'ko' ? '데이터 로딩 중...' : 'Loading data...'}</p>
+                  </div>
+                </div>
+              ) : simplePoints.length > 0 ? (
                 <ResponsiveContainer width="100%" height={300}>
                   <LineChart data={simplePoints}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="label" />
                     <YAxis domain={[-3, 3]} />
                     <Tooltip />
-                    <Line 
-                      type="monotone" 
-                      dataKey="value" 
-                      stroke="#0ea5e9" 
+                    <Line
+                      type="monotone"
+                      dataKey="value"
+                      stroke="#0ea5e9"
                       strokeWidth={3}
                       dot={{ fill: '#0ea5e9', strokeWidth: 2, r: 4 }}
                     />
@@ -886,7 +949,7 @@ export default function Home() {
                     <th className="sticky left-0 z-10 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 border-r border-gray-200">
                       {t('Item')}
                     </th>
-                    {Object.keys(groupedData).sort((a, b) => new Date(a).getTime() - new Date(b).getTime()).slice(0, 5).map((date) => (
+                    {Object.keys(groupedData).sort((a, b) => new Date(b).getTime() - new Date(a).getTime()).slice(0, 5).map((date) => (
                       <th key={date} className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-200">
                         {date}
                       </th>
@@ -895,7 +958,7 @@ export default function Home() {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredMatrixData.slice(0, showMoreItems).map((item, index) => {
-                    const analysisResults = Object.keys(groupedData).sort((a, b) => new Date(a).getTime() - new Date(b).getTime()).slice(0, 5).map(date => {
+                    const analysisResults = Object.keys(groupedData).sort((a, b) => new Date(b).getTime() - new Date(a).getTime()).slice(0, 5).map(date => {
                       const dateResults = groupedData[date] || []
                       const result = dateResults.find(result => Number(result?.연번) === Number(item.연번)) || null
                       return result

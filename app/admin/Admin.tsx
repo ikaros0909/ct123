@@ -717,10 +717,12 @@ export default function AdminDashboard() {
     setLoading(true)
     try {
       const token = localStorage.getItem('token')
-      const url = editingItem 
+      const url = editingItem
         ? `/api/admin/companies/${editingItem.id}`
         : '/api/admin/companies'
-      
+
+      console.log('Saving company:', companyForm, 'to:', url)
+
       const res = await fetch(url, {
         method: editingItem ? 'PUT' : 'POST',
         headers: {
@@ -735,12 +737,18 @@ export default function AdminDashboard() {
 
       if (!res.ok) {
         const data = await res.json()
+        console.error('Company save failed:', data)
         throw new Error(data.error)
       }
 
+      const savedCompany = await res.json()
+      console.log('Company saved successfully:', savedCompany)
+
       setShowModal(false)
+      setSuccessMessage('기업이 성공적으로 저장되었습니다.')
       loadData()
     } catch (err: any) {
+      console.error('Error saving company:', err)
       setError(err.message)
     } finally {
       setLoading(false)

@@ -37,7 +37,8 @@
       "Bash(powershell:*)",
       "mcp__ide__getDiagnostics",
       "Bash(awk:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(\"C:\\Program Files\\PostgreSQL\\17\\bin\\psql\" -U samsung_user -d samsung_db -h localhost -c \"SELECT id, name, \"\"nameKr\"\", \"\"order\"\", \"\"createdAt\"\" FROM \"\"Company\"\" ORDER BY \"\"order\"\" ASC, \"\"createdAt\"\" ASC;\")"
     ],
     "deny": [],
     "ask": []

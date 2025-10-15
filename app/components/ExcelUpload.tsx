@@ -16,13 +16,21 @@ interface ExcelRow {
   sequenceNumber: number
   item: string
   itemEn?: string
+  itemJa?: string
+  itemZh?: string
   question: string
   questionEn?: string
+  questionJa?: string
+  questionZh?: string
   category: string
   categoryEn?: string
+  categoryJa?: string
+  categoryZh?: string
   weight: number
   generalRule?: string
   generalRuleEn?: string
+  generalRuleJa?: string
+  generalRuleZh?: string
 }
 
 export default function ExcelUpload({ 
@@ -54,13 +62,21 @@ export default function ExcelUpload({
         '연번': 1,
         '항목': '매출 성장률 전망',
         '항목(영문)': 'Revenue Growth Outlook',
+        '항목(일본어)': '売上成長率の見通し',
+        '항목(중국어)': '营收增长展望',
         '질문': '향후 3개월 내 매출 성장률 전망은?',
         '질문(영문)': 'What is the revenue growth outlook for the next 3 months?',
+        '질문(일본어)': '今後3ヶ月の売上成長率の見通しは？',
+        '질문(중국어)': '未来3个月的营收增长展望如何？',
         '카테고리': 'I. 기업내생변수',
         '카테고리(영문)': 'I. Internal Factors',
+        '카테고리(일본어)': 'I. 企業内生要因',
+        '카테고리(중국어)': 'I. 企业内生因素',
         '가중치': 0.15,
         '일반법칙': '매출 성장률이 높을수록 긍정적',
-        '일반법칙(영문)': 'Higher revenue growth is positive'
+        '일반법칙(영문)': 'Higher revenue growth is positive',
+        '일반법칙(일본어)': '売上成長率が高いほど肯定的',
+        '일반법칙(중국어)': '营收增长率越高越积极'
       },
       {
         '연번': 2,
@@ -220,13 +236,21 @@ export default function ExcelUpload({
       { wch: 8 },   // 연번
       { wch: 25 },  // 항목
       { wch: 25 },  // 항목(영문)
+      { wch: 25 },  // 항목(일본어)
+      { wch: 25 },  // 항목(중국어)
       { wch: 40 },  // 질문
       { wch: 40 },  // 질문(영문)
+      { wch: 40 },  // 질문(일본어)
+      { wch: 40 },  // 질문(중국어)
       { wch: 20 },  // 카테고리
       { wch: 20 },  // 카테고리(영문)
+      { wch: 20 },  // 카테고리(일본어)
+      { wch: 20 },  // 카테고리(중국어)
       { wch: 10 },  // 가중치
       { wch: 30 },  // 일반법칙
-      { wch: 30 }   // 일반법칙(영문)
+      { wch: 30 },  // 일반법칙(영문)
+      { wch: 30 },  // 일반법칙(일본어)
+      { wch: 30 }   // 일반법칙(중국어)
     ]
 
     const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' })
@@ -271,13 +295,21 @@ export default function ExcelUpload({
             sequenceNumber: Number(row['연번']),
             item: String(row['항목']),
             itemEn: row['항목(영문)'] ? String(row['항목(영문)']) : undefined,
+            itemJa: row['항목(일본어)'] ? String(row['항목(일본어)']) : undefined,
+            itemZh: row['항목(중국어)'] ? String(row['항목(중국어)']) : undefined,
             question: String(row['질문']),
             questionEn: row['질문(영문)'] ? String(row['질문(영문)']) : undefined,
+            questionJa: row['질문(일본어)'] ? String(row['질문(일본어)']) : undefined,
+            questionZh: row['질문(중국어)'] ? String(row['질문(중국어)']) : undefined,
             category: String(row['카테고리']),
             categoryEn: row['카테고리(영문)'] ? String(row['카테고리(영문)']) : undefined,
+            categoryJa: row['카테고리(일본어)'] ? String(row['카테고리(일본어)']) : undefined,
+            categoryZh: row['카테고리(중국어)'] ? String(row['카테고리(중국어)']) : undefined,
             weight: Number(row['가중치']),
             generalRule: row['일반법칙'] ? String(row['일반법칙']) : undefined,
-            generalRuleEn: row['일반법칙(영문)'] ? String(row['일반법칙(영문)']) : undefined
+            generalRuleEn: row['일반법칙(영문)'] ? String(row['일반법칙(영문)']) : undefined,
+            generalRuleJa: row['일반법칙(일본어)'] ? String(row['일반법칙(일본어)']) : undefined,
+            generalRuleZh: row['일반법칙(중국어)'] ? String(row['일반법칙(중국어)']) : undefined
           }
         })
         
@@ -315,13 +347,21 @@ export default function ExcelUpload({
           sequenceNumber: Number(row['연번']),
           item: String(row['항목']),
           itemEn: row['항목(영문)'] || null,
+          itemJa: row['항목(일본어)'] || null,
+          itemZh: row['항목(중국어)'] || null,
           question: String(row['질문']),
           questionEn: row['질문(영문)'] || null,
+          questionJa: row['질문(일본어)'] || null,
+          questionZh: row['질문(중국어)'] || null,
           category: String(row['카테고리']),
           categoryEn: row['카테고리(영문)'] || null,
+          categoryJa: row['카테고리(일본어)'] || null,
+          categoryZh: row['카테고리(중국어)'] || null,
           weight: Number(row['가중치']),
           generalRule: row['일반법칙'] || '',
           generalRuleEn: row['일반법칙(영문)'] || null,
+          generalRuleJa: row['일반법칙(일본어)'] || null,
+          generalRuleZh: row['일반법칙(중국어)'] || null,
           scale: 0,  // 척도는 분석 결과이므로 기본값 0
           modifiedScale: 0,  // 수정된 척도도 분석 결과이므로 기본값 0
           cumulativeScore: 0,

@@ -41,19 +41,29 @@ model MainData {
   sequenceNumber  Int
   item            String
   itemEn          String?
+  itemJa          String?
+  itemZh          String?
   question        String
   questionEn      String?
+  questionJa      String?
+  questionZh      String?
   scale           Int
   generalRule     String
   generalRuleEn   String?
+  generalRuleJa   String?
+  generalRuleZh   String?
   modifiedScale   Int
   cumulativeScore Int
   weight          Float
   index           Float
   source          String?
   sourceEn        String?
+  sourceJa        String?
+  sourceZh        String?
   category        String
   categoryEn      String?
+  categoryJa      String?
+  categoryZh      String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   userId          String?
@@ -94,10 +104,12 @@ model Report {
   date      DateTime
   type      ReportType
   content   String
+  contentEn String?
+  contentJa String?
+  contentZh String?
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
   userId    String?
-  contentEn String?
   company   Company    @relation(fields: [companyId], references: [id])
   user      User?      @relation(fields: [userId], references: [id])
 
