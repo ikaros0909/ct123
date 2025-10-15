@@ -38,7 +38,11 @@
       "mcp__ide__getDiagnostics",
       "Bash(awk:*)",
       "Bash(grep:*)",
-      "Bash(\"C:\\Program Files\\PostgreSQL\\17\\bin\\psql\" -U samsung_user -d samsung_db -h localhost -c \"SELECT id, name, \"\"nameKr\"\", \"\"order\"\", \"\"createdAt\"\" FROM \"\"Company\"\" ORDER BY \"\"order\"\" ASC, \"\"createdAt\"\" ASC;\")"
+      "Bash(\"C:\\Program Files\\PostgreSQL\\17\\bin\\psql\" -U samsung_user -d samsung_db -h localhost -c \"SELECT id, name, \"\"nameKr\"\", \"\"order\"\", \"\"createdAt\"\" FROM \"\"Company\"\" ORDER BY \"\"order\"\" ASC, \"\"createdAt\"\" ASC;\")",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(dir:*)",
+      "Bash(git rm:*)"
     ],
     "deny": [],
     "ask": []

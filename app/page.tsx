@@ -601,19 +601,19 @@ export default function Home() {
       {/* Header */}
       <header className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-8">
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-sm">
-                <Zap className="w-7 h-7 text-white" />
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center py-4 sm:py-8 gap-4">
+            <div className="flex items-center space-x-3 sm:space-x-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-sm">
+                <Zap className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">AI Corporate Competitiveness Diagnosis</h1>
-                <p className="text-gray-600">{t('Subtitle')}</p>
+                <h1 className="text-lg sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-gray-900">AI Corporate Competitiveness Diagnosis</h1>
+                <p className="text-xs sm:text-sm text-gray-600 hidden sm:block">{t('Subtitle')}</p>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-4 w-full sm:w-auto justify-end">
               {/* 언어 선택 */}
-              <div className="flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
+              <div className="flex items-center space-x-1 bg-gray-100 rounded-lg p-0.5 sm:p-1">
                 <button
                   onClick={() => setLang('ko')}
                   className={`px-2.5 py-1.5 rounded text-sm font-medium transition-colors ${
@@ -626,7 +626,7 @@ export default function Home() {
                 </button>
                 <button
                   onClick={() => setLang('en')}
-                  className={`px-2.5 py-1.5 rounded text-sm font-medium transition-colors ${
+                  className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded text-xs sm:text-sm font-medium transition-colors ${
                     lang === 'en'
                       ? 'bg-white text-gray-900 shadow-sm'
                       : 'text-gray-600 hover:text-gray-900'
@@ -636,7 +636,7 @@ export default function Home() {
                 </button>
                 <button
                   onClick={() => setLang('ja')}
-                  className={`px-2.5 py-1.5 rounded text-sm font-medium transition-colors ${
+                  className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded text-xs sm:text-sm font-medium transition-colors ${
                     lang === 'ja'
                       ? 'bg-white text-gray-900 shadow-sm'
                       : 'text-gray-600 hover:text-gray-900'
@@ -646,7 +646,7 @@ export default function Home() {
                 </button>
                 <button
                   onClick={() => setLang('zh')}
-                  className={`px-2.5 py-1.5 rounded text-sm font-medium transition-colors ${
+                  className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded text-xs sm:text-sm font-medium transition-colors ${
                     lang === 'zh'
                       ? 'bg-white text-gray-900 shadow-sm'
                       : 'text-gray-600 hover:text-gray-900'
@@ -661,12 +661,12 @@ export default function Home() {
                 <div className="relative user-menu-container">
                   <button
                     onClick={() => setShowUserMenu(!showUserMenu)}
-                    className="flex items-center space-x-2 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+                    className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg hover:bg-gray-100 transition-colors"
                   >
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-medium text-sm">
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-medium text-xs sm:text-sm">
                       {(user?.name || user?.email || 'U')[0].toUpperCase()}
                     </div>
-                    <span className="text-sm font-medium text-gray-700">{user?.name || user?.email}</span>
+                    <span className="text-xs sm:text-sm font-medium text-gray-700 hidden sm:inline">{user?.name || user?.email}</span>
                     <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
@@ -729,7 +729,7 @@ export default function Home() {
               ) : (
                 <button 
                   onClick={() => setShowAuthModal(true)}
-                  className="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:from-blue-600 hover:to-indigo-700 text-sm font-medium transition-all transform hover:scale-105"
+                  className="px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:from-blue-600 hover:to-indigo-700 text-xs sm:text-sm font-medium transition-all transform hover:scale-105"
                 >
                   {t('Login')}
                 </button>
@@ -742,12 +742,12 @@ export default function Home() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 		{/* Company Selector */}
-		<div className="mb-4 flex flex-wrap items-center gap-2">
+		<div className="mb-4 flex flex-wrap items-center gap-1.5 sm:gap-2">
 			{(showAllCompanies ? companies : companies.slice(0, 5)).map((company) => (
 				<button
 					key={company.id}
 					onClick={() => setSelectedCompany(company)}
-					className={`px-3 py-1.5 border rounded-lg text-sm font-medium transition-all ${
+					className={`px-2 sm:px-3 py-1 sm:py-1.5 border rounded-lg text-xs sm:text-sm font-medium transition-all ${
 						selectedCompany?.id === company.id 
 							? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-transparent shadow-md' 
 							: 'bg-white hover:bg-gray-50 border-gray-300'
@@ -764,7 +764,7 @@ export default function Home() {
 			{companies.length > 5 && (
 				<button
 					onClick={() => setShowAllCompanies(!showAllCompanies)}
-					className="px-3 py-1.5 border border-dashed border-gray-400 rounded-lg hover:bg-gray-50 text-sm font-medium text-gray-600 transition-colors flex items-center gap-1"
+					className="px-2 sm:px-3 py-1 sm:py-1.5 border border-dashed border-gray-400 rounded-lg hover:bg-gray-50 text-xs sm:text-sm font-medium text-gray-600 transition-colors flex items-center gap-1"
 				>
 					{showAllCompanies ? (
 						<>
@@ -788,7 +788,7 @@ export default function Home() {
 			{user?.role === 'ADMIN' && (
 				<a 
 					href="/admin" 
-					className="px-3 py-1.5 border border-purple-400 rounded-lg hover:bg-purple-50 text-sm font-medium text-purple-600 transition-colors flex items-center gap-1"
+					className="px-2 sm:px-3 py-1 sm:py-1.5 border border-purple-400 rounded-lg hover:bg-purple-50 text-xs sm:text-sm font-medium text-purple-600 transition-colors flex items-center gap-1"
 				>
 					<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -801,36 +801,35 @@ export default function Home() {
 		
 		{/* Date selector and AI Analysis button - Only shown when company is selected */}
 		{selectedCompany && (
-			<div className="mb-6 flex items-center gap-4 p-4 bg-white rounded-lg border border-gray-200">
-				<div className="flex items-center gap-2">
-					<span className="text-sm font-medium text-gray-700">{t('SelectedCompany')}</span>
-					<span className="px-2 py-1 bg-blue-50 text-blue-700 rounded text-sm font-semibold">
+			<div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-white rounded-lg border border-gray-200">
+				<div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+					<span className="text-xs sm:text-sm font-medium text-gray-700">{t('SelectedCompany')}</span>
+					<span className="px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs sm:text-sm font-semibold">
 						{lang === 'ko' ? (selectedCompany.nameKr || selectedCompany.name) : (selectedCompany.name || selectedCompany.nameKr)}
 					</span>
 				</div>
 				
-				<div className="flex-1" />
 				
-				<div className="flex items-center gap-3">
-					<div className="flex items-center space-x-2">
-						<Calendar className="w-5 h-5 text-gray-500" />
+				<div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto sm:ml-auto">
+					<div className="flex items-center space-x-2 w-full sm:w-auto">
+						<Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
 						<input
 							type="date"
 							value={selectedDate}
 							onChange={(e) => setSelectedDate(e.target.value)}
-							className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+							className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 border border-gray-300 rounded-lg text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
 						/>
 					</div>
 					
 					<button
 						onClick={handleAnalyze}
 						disabled={loading || !selectedCompany}
-						className="px-4 py-1.5 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:from-blue-600 hover:to-indigo-700 text-sm font-medium transition-all flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+						className="w-full sm:w-auto px-3 sm:px-4 py-2 sm:py-1.5 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:from-blue-600 hover:to-indigo-700 text-xs sm:text-sm font-medium transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
 					>
 						{loading ? (
-							<div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+							<div className="w-3.5 h-3.5 sm:w-4 sm:h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
 						) : (
-							<Activity className="w-4 h-4" />
+							<Activity className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
 						)}
 						<span>{loading ? t('Analyzing...') : t('Analyze')}</span>
 					</button>
@@ -839,34 +838,34 @@ export default function Home() {
 		)}
 		{/* Composite Index Trend one-liner */}
 		{simplePoints.length > 0 && (
-			<div className="mb-6 text-sm">
-				<div className="px-3 py-2 border rounded bg-white">
-					<span className="font-medium mr-2">{t('CompositeIndexTrend')} : As of 10:00, {fmtMDY}</span>
-					<span className="text-gray-700">
+			<div className="mb-6 text-xs sm:text-sm">
+				<div className="px-2 sm:px-3 py-2 border rounded bg-white">
+					<div className="font-medium mb-1 sm:mb-0 sm:inline sm:mr-2">{t('CompositeIndexTrend')} : As of 10:00, {fmtMDY}</div>
+					<div className="text-gray-700 flex flex-wrap gap-2 sm:inline">
 						{simplePoints.slice(-3).map((p, i) => (
-							<span key={p.label} className="mr-3">
+							<span key={p.label} className="sm:mr-3">
 								{p.label}: {p.value.toFixed(2)}
 							</span>
 						))}
-					</span>
+					</div>
 				</div>
 			</div>
 		)}
         {/* Charts */}
         <div className="mb-8">
           {/* AI_H지수 트렌드 */}
-          <div className="card p-6">
+          <div className="card p-3 sm:p-6">
             <>
-              <div className="text-sm font-semibold text-gray-900 mb-2">{t('CompositeIndexTrend')} : As of 10:00, {fmtMDY}</div>
+              <div className="text-xs sm:text-sm font-semibold text-gray-900 mb-2">{t('CompositeIndexTrend')} : As of 10:00, {fmtMDY}</div>
               {loading ? (
-                <div className="flex items-center justify-center h-[300px]">
+                <div className="flex items-center justify-center h-[250px] sm:h-[300px]">
                   <div className="text-center">
-                    <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-                    <p className="text-sm text-gray-600">{lang === 'ko' ? '데이터 로딩 중...' : 'Loading data...'}</p>
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-3" />
+                    <p className="text-xs sm:text-sm text-gray-600">{lang === 'ko' ? '데이터 로딩 중...' : 'Loading data...'}</p>
                   </div>
                 </div>
               ) : simplePoints.length > 0 ? (
-                <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer width="100%" height={250} className="sm:h-[300px]">
                   <LineChart data={simplePoints}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="label" />
@@ -882,13 +881,13 @@ export default function Home() {
                   </LineChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="flex items-center justify-center h-[300px] text-gray-500">
+                <div className="flex items-center justify-center h-[250px] sm:h-[300px] text-gray-500">
                   <div className="text-center">
-                    <svg className="mx-auto h-12 w-12 text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="mx-auto h-10 w-10 sm:h-12 sm:w-12 text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                     </svg>
-                    <p className="text-sm">{lang === 'ko' ? '분석 데이터가 없습니다' : 'No analysis data available'}</p>
-                    <p className="text-xs text-gray-400 mt-1">
+                    <p className="text-xs sm:text-sm">{lang === 'ko' ? '분석 데이터가 없습니다' : 'No analysis data available'}</p>
+                    <p className="text-[10px] sm:text-xs text-gray-400 mt-1">
                       {lang === 'ko' ? 'AI 분석을 실행하여 데이터를 생성해주세요' : 'Please run AI analysis to generate data'}
                     </p>
                   </div>
@@ -900,33 +899,40 @@ export default function Home() {
 
         {/* Insight, Now report (below chart) */}
         <div className="mb-8">
-          <div className="card p-6">
-            {insightReport || nowReport ? (
+          <div className="card p-3 sm:p-6">
+            {loading ? (
+              <div className="flex items-center justify-center py-12 sm:py-16">
+                <div className="text-center">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-3" />
+                  <p className="text-xs sm:text-sm text-gray-600">{lang === 'ko' ? '데이터 로딩 중...' : 'Loading data...'}</p>
+                </div>
+              </div>
+            ) : insightReport || nowReport ? (
               <div className="space-y-6">
                 {insightReport && (
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">{t('InsightReport')}</h4>
-                    <div className="whitespace-pre-wrap text-sm text-gray-700 bg-blue-50 p-4 rounded-lg">
+                    <h4 className="text-sm sm:text-base font-semibold text-gray-900 mb-2">{t('InsightReport')}</h4>
+                    <div className="whitespace-pre-wrap text-xs sm:text-sm text-gray-700 bg-blue-50 p-3 sm:p-4 rounded-lg">
                       {lang === 'ko' ? insightReport.content : (insightReport.contentEn || insightReport.content)}
                     </div>
                   </div>
                 )}
                 {nowReport && (
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">{t('NowReport')}</h4>
-                    <div className="whitespace-pre-wrap text-sm text-gray-700 bg-gray-50 p-4 rounded-lg">
+                    <h4 className="text-sm sm:text-base font-semibold text-gray-900 mb-2">{t('NowReport')}</h4>
+                    <div className="whitespace-pre-wrap text-xs sm:text-sm text-gray-700 bg-gray-50 p-3 sm:p-4 rounded-lg">
                       {lang === 'ko' ? nowReport.content : (nowReport.contentEn || nowReport.content)}
                     </div>
                   </div>
                 )}
               </div>
             ) : (
-              <div className="text-center py-8 text-gray-500">
-                <svg className="mx-auto h-12 w-12 text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="text-center py-6 sm:py-8 text-gray-500">
+                <svg className="mx-auto h-10 w-10 sm:h-12 sm:w-12 text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
-                <p className="text-sm">{lang === 'ko' ? '분석 리포트가 없습니다' : 'No analysis reports available'}</p>
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="text-xs sm:text-sm">{lang === 'ko' ? '분석 리포트가 없습니다' : 'No analysis reports available'}</p>
+                <p className="text-[10px] sm:text-xs text-gray-400 mt-1">
                   {lang === 'ko' ? 'AI 분석을 실행하여 리포트를 생성해주세요' : 'Please run AI analysis to generate reports'}
                 </p>
               </div>
@@ -936,21 +942,30 @@ export default function Home() {
 
         {/* Analysis Matrix (moved below Insight) */}
         <div className="mt-8">
-          <div className="card">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">
+          <div className="card overflow-hidden">
+            <div className="px-3 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+              <h3 className="text-sm sm:text-base lg:text-lg font-semibold text-gray-900">
                 {t('SubIndexTrend')} : As of 10:00, {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
               </h3>
             </div>
-            <div className="overflow-x-auto">
-              <table className="min-w-full">
+            {loading ? (
+              <div className="flex items-center justify-center py-16 sm:py-20">
+                <div className="text-center">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-3" />
+                  <p className="text-xs sm:text-sm text-gray-600">{lang === 'ko' ? '데이터 로딩 중...' : 'Loading data...'}</p>
+                </div>
+              </div>
+            ) : (
+            <div>
+            <div className="overflow-x-auto -mx-3 sm:mx-0">
+              <table className="min-w-full text-xs sm:text-sm">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="sticky left-0 z-10 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 border-r border-gray-200">
+                    <th className="sticky left-0 z-10 px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 border-r border-gray-200">
                       {t('Item')}
                     </th>
                     {Object.keys(groupedData).sort((a, b) => new Date(b).getTime() - new Date(a).getTime()).slice(0, 5).map((date) => (
-                      <th key={date} className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-200">
+                      <th key={date} className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-center text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-200 whitespace-nowrap">
                         {date}
                       </th>
                     ))}
@@ -966,17 +981,17 @@ export default function Home() {
 
                     return (
                     <tr key={`matrix-row-${item.연번}-${item.id}`} className="hover:bg-gray-50">
-                      <td className="sticky left-0 z-10 px-6 py-4 bg-white border-r border-gray-200">
-                        <div className="space-y-1">
-                          <div className="flex items-center space-x-2">
-                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+                      <td className="sticky left-0 z-10 px-2 sm:px-4 lg:px-6 py-2 sm:py-3 lg:py-4 bg-white border-r border-gray-200">
+                        <div className="space-y-0.5 sm:space-y-1 min-w-[180px] sm:min-w-[220px]">
+                          <div className="flex items-center space-x-1 sm:space-x-2 flex-wrap">
+                            <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium bg-primary-100 text-primary-800 whitespace-nowrap">
                               {t('Item')} {item.연번}
                             </span>
-                            <span className="text-sm font-medium text-gray-900">{translateField(item.분야)}</span>
+                            <span className="text-[10px] sm:text-xs lg:text-sm font-medium text-gray-900">{translateField(item.분야)}</span>
                             {analysisStatus[item.연번] && (
-                              <div className="flex items-center space-x-2">
+                              <div className="flex items-center space-x-1 sm:space-x-2">
                                 <span 
-                                  className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                  className={`inline-flex items-center px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium ${
                                   analysisStatus[item.연번]?.status === 'success'
                                     ? 'bg-success-100 text-success-800'
                                     : analysisStatus[item.연번]?.status === 'error'
@@ -996,7 +1011,7 @@ export default function Home() {
                                       Number(a.연번) === Number(item.연번) && a.날짜 === selectedDate
                                     )
                                     return analysisResult ? (
-                                      <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-bold ${
+                                      <span className={`inline-flex items-center px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-[10px] sm:text-xs font-bold ${
                                         analysisResult.AI_H지수 > 0 
                                           ? 'bg-success-50 text-success-700 border border-success-200'
                                           : analysisResult.AI_H지수 < 0
@@ -1011,25 +1026,25 @@ export default function Home() {
                               </div>
                             )}
                           </div>
-                          <div className="text-xs text-gray-500 truncate max-w-xs">
+                          <div className="text-[10px] sm:text-xs text-gray-500 truncate max-w-[150px] sm:max-w-xs">
                             {getTranslatedAnalysisItem(item)}
                           </div>
-                          <div className="flex items-center space-x-2 text-xs">
-                            <span className="text-gray-600">{t('Weight')}: ***</span>
-                            <span className="text-gray-400">|</span>
-                            <span className="text-gray-600">{getTranslatedCategory(item)}</span>
-                            <span className="text-gray-400">|</span>
-                            <span className="text-gray-600">{t('Item')}: {item.연번}</span>
+                          <div className="flex items-center space-x-1 sm:space-x-2 text-[9px] sm:text-xs flex-wrap">
+                            <span className="text-gray-600 whitespace-nowrap">{t('Weight')}: ***</span>
+                            <span className="text-gray-400 hidden sm:inline">|</span>
+                            <span className="text-gray-600 truncate max-w-[100px] sm:max-w-none">{getTranslatedCategory(item)}</span>
+                            <span className="text-gray-400 hidden sm:inline">|</span>
+                            <span className="text-gray-600 whitespace-nowrap">{t('Item')}: {item.연번}</span>
                           </div>
                         </div>
                       </td>
 
                       {analysisResults.map((result, dateIndex) => (
-                        <td key={dateIndex} className="px-6 py-4 text-center border-r border-gray-200">
+                        <td key={dateIndex} className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3 lg:py-4 text-center border-r border-gray-200">
                           {result ? (
-                            <div className="space-y-2">
+                            <div className="space-y-1 sm:space-y-2">
                               <div className="flex justify-center">
-                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium transition-all duration-200 ${
+                                <span className={`inline-flex items-center px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 ${
                                   result.AI_H지수 > 0 
                                     ? 'bg-success-100 text-success-800 border border-success-200' 
                                     : result.AI_H지수 < 0 
@@ -1039,7 +1054,7 @@ export default function Home() {
                                   {result.AI_H지수}
                                 </span>
                               </div>
-                              <div className={`text-xs font-medium ${
+                              <div className={`text-[10px] sm:text-xs font-medium ${
                                 result.지수X가중치 > 0 ? 'text-success-600' : 
                                 result.지수X가중치 < 0 ? 'text-error-600' : 'text-gray-600'
                               }`}>
@@ -1047,7 +1062,7 @@ export default function Home() {
                               </div>
                             </div>
                           ) : (
-                            <div className="text-gray-400 text-sm">-</div>
+                            <div className="text-gray-400 text-xs sm:text-sm">-</div>
                           )}
                         </td>
                       ))}
@@ -1060,72 +1075,74 @@ export default function Home() {
             
             {/* Show More Button */}
             {filteredMatrixData.length > showMoreItems && (
-              <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
+              <div className="px-3 sm:px-6 py-3 sm:py-4 border-t border-gray-200 bg-gray-50">
                 <button
                   onClick={() => setShowMoreItems(prev => prev + 10)}
-                  className="w-full py-3 px-4 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-colors duration-200 flex items-center justify-center space-x-2"
+                  className="w-full py-2 sm:py-3 px-3 sm:px-4 bg-white border border-gray-300 rounded-lg text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-colors duration-200 flex items-center justify-center space-x-2"
                 >
                   <span>{t('ShowMore')} ({filteredMatrixData.length - showMoreItems} {t('more')} {t('items')})</span>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
               </div>
+            )}
+            </div>
             )}
           </div>
         </div>
 
         {/* Company Summary */}
         <div className="mt-8">
-          <div className="card p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('CompanySummary')}</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div className="space-y-3">
+          <div className="card p-3 sm:p-6">
+            <h3 className="text-sm sm:text-base lg:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">{t('CompanySummary')}</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              <div className="space-y-2 sm:space-y-3">
                 <div>
-                  <h4 className="font-medium text-gray-900">{t('SelectedCompany').replace(':', '')}</h4>
-                  <p className="text-gray-600">
+                  <h4 className="text-xs sm:text-sm font-medium text-gray-900">{t('SelectedCompany').replace(':', '')}</h4>
+                  <p className="text-xs sm:text-sm text-gray-600">
                     {lang === 'ko' ? (selectedCompany?.nameKr || selectedCompany?.name) : (selectedCompany?.name || selectedCompany?.nameKr) || t('SelectCompany')}
                   </p>
                 </div>
                 <div>
-                  <h4 className="font-medium text-gray-900">{lang === 'ko' ? '산업' : 'Industry'}</h4>
-                  <p className="text-gray-600">{lang === 'ko' ? '기술 / 전자' : 'Technology / Electronics'}</p>
+                  <h4 className="text-xs sm:text-sm font-medium text-gray-900">{lang === 'ko' ? '산업' : 'Industry'}</h4>
+                  <p className="text-xs sm:text-sm text-gray-600">{lang === 'ko' ? '기술 / 전자' : 'Technology / Electronics'}</p>
                 </div>
                 <div>
-                  <h4 className="font-medium text-gray-900">{lang === 'ko' ? '시가총액' : 'Market Cap'}</h4>
-                  <p className="text-gray-600">$400B+</p>
+                  <h4 className="text-xs sm:text-sm font-medium text-gray-900">{lang === 'ko' ? '시가총액' : 'Market Cap'}</h4>
+                  <p className="text-xs sm:text-sm text-gray-600">$400B+</p>
                 </div>
               </div>
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 <div>
-                  <h4 className="font-medium text-gray-900">{t('AnalysisDate')}</h4>
-                  <p className="text-gray-600">{selectedDate}</p>
+                  <h4 className="text-xs sm:text-sm font-medium text-gray-900">{t('AnalysisDate')}</h4>
+                  <p className="text-xs sm:text-sm text-gray-600">{selectedDate}</p>
                 </div>
                 <div>
-                  <h4 className="font-medium text-gray-900">{t('TotalAnalysisItems')}</h4>
-                  <p className="text-gray-600">{mainData.length} {t('items')}</p>
+                  <h4 className="text-xs sm:text-sm font-medium text-gray-900">{t('TotalAnalysisItems')}</h4>
+                  <p className="text-xs sm:text-sm text-gray-600">{mainData.length} {t('items')}</p>
                 </div>
                 <div>
-                  <h4 className="font-medium text-gray-900">{t('CurrentIndex')}</h4>
-                  <p className="text-gray-600">
+                  <h4 className="text-xs sm:text-sm font-medium text-gray-900">{t('CurrentIndex')}</h4>
+                  <p className="text-xs sm:text-sm text-gray-600">
                     {averageData.length > 0 ? averageData[averageData.length - 1].평균AI_H지수.toFixed(2) : '0.00'}
                   </p>
                 </div>
               </div>
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 <div>
-                  <h4 className="font-medium text-gray-900">{lang === 'ko' ? '분석 상태' : 'Analysis Status'}</h4>
-                  <p className="text-gray-600">{lang === 'ko' ? '활성' : 'Active'}</p>
+                  <h4 className="text-xs sm:text-sm font-medium text-gray-900">{lang === 'ko' ? '분석 상태' : 'Analysis Status'}</h4>
+                  <p className="text-xs sm:text-sm text-gray-600">{lang === 'ko' ? '활성' : 'Active'}</p>
                 </div>
                 <div>
-                  <h4 className="font-medium text-gray-900">{lang === 'ko' ? '최근 업데이트' : 'Last Updated'}</h4>
-                  <p className="text-gray-600">
+                  <h4 className="text-xs sm:text-sm font-medium text-gray-900">{lang === 'ko' ? '최근 업데이트' : 'Last Updated'}</h4>
+                  <p className="text-xs sm:text-sm text-gray-600">
                     {lastUpdated || (lang === 'ko' ? '로딩 중...' : 'Loading...')}
                   </p>
                 </div>
                 <div>
-                  <h4 className="font-medium text-gray-900">{lang === 'ko' ? '데이터 소스' : 'Data Source'}</h4>
-                  <p className="text-gray-600">{lang === 'ko' ? 'AI 분석 엔진' : 'AI Analysis Engine'}</p>
+                  <h4 className="text-xs sm:text-sm font-medium text-gray-900">{lang === 'ko' ? '데이터 소스' : 'Data Source'}</h4>
+                  <p className="text-xs sm:text-sm text-gray-600">{lang === 'ko' ? 'AI 분석 엔진' : 'AI Analysis Engine'}</p>
                 </div>
               </div>
             </div>
